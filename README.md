@@ -2,4 +2,4 @@
 hyprland config files
 
 ### dependencies
-hyprland hypridle hyprnotify libnotify wlogout waybar hyprpaper
+hyprland hyprpaper hypridle wlogout waybar kitty hyprnotify libnotify
