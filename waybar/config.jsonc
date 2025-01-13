@@ -27,6 +27,7 @@
     ],
     "modules-center": [
         //"sway/window"
+        "clock",
         ""
     ],
     "modules-right": [
@@ -43,6 +44,5 @@
         "temperature",
         "battery",
         "custom/exit",
-        "clock",
     ],
 }
