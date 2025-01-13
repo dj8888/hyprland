@@ -2,4 +2,4 @@
 hyprland config files
 
 ### dependencies
-hyprland hyprpaper hypridle wlogout waybar kitty hyprnotify libnotify hyprshot xdg-desktop-portal-hyprland
+hyprland hyprpaper wofi hypridle wlogout waybar kitty hyprnotify libnotify hyprshot xdg-desktop-portal-hyprland tmux

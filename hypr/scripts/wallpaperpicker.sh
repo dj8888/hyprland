@@ -4,7 +4,7 @@
 WALLPAPER_DIR="/mnt/data/Wallpapers/" 
 
 # Pipe files in wofi to choose one
-CHOSEN=$(ls "$WALLPAPER_DIR" | wofi --dmenu)
+CHOSEN=$(ls "$WALLPAPER_DIR" | wofi -i --dmenu)
 
 # Quit if nothing is choosen
 if [ -z "$CHOSEN" ]; then
