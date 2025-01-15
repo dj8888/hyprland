@@ -9,6 +9,7 @@
 @define-color iconcolor #FFFFFF;
 
 * {
+    all: initial; /* disregard gtk theme!! */
     /* `otf-font-awesome` is required to be installed for icons */
     font-family: "Fira Code", FontAwesome, Roboto, Helvetica, Arial, sans-serif;
     /*font-size: 13px;*/
@@ -17,7 +18,6 @@
 
 window#waybar {
     background: transparent;
-    margin: 15px;
 }
 
 window#waybar.hidden {
@@ -81,7 +81,7 @@ tooltip label {
 }
 
 #workspaces button {
-    padding: 0 5px;
+    padding: 0 8px;
     color: #ffffff;
     transition: all 0.5s ease-in-out;
     /*box-shadow: inset 0 -3px transparent;*/
@@ -146,6 +146,11 @@ tooltip label {
     background: rgba(0,0,0,0.8);
 }
 
+#temperature {
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
 #temperature.critical {
     background-color: #eb4d4b;
 }
@@ -156,6 +161,9 @@ tooltip label {
 #battery {
     background-color: rgba(0,0,0,0.8);
     color: #000000;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+    margin-left: 8px;
 }
 
 #battery.charging, #battery.plugged {
@@ -185,9 +193,9 @@ to {
  * ----------------------------------------------------- */
 
 #pulseaudio {
+    background-color: rgba(0,0,0,0.8);
     border-top-left-radius: 16px;
     border-bottom-left-radius: 16px;
-    background-color: rgba(0,0,0,0.8);
 }
 
 /* you can set a style on hover for any module like this */
@@ -213,6 +221,9 @@ to {
  * ----------------------------------------------------- */
 #network {
     background-color: #26A65B;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    margin-right: 8px;
 }
 
 #network.disconnected {
@@ -224,9 +235,8 @@ to {
  * ----------------------------------------------------- */
 #tray {
     background-color: rgba(0,0,0,0.8);
-    border-radius: 16px;
-    margin-left: 5px;
-    margin-right: 5px;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
 }
 
 #tray > .passive {
@@ -246,6 +256,9 @@ to {
     background-color: rgba(0,0,0,0.8);
     border-top-right-radius: 16px;
     border-bottom-right-radius: 16px;
+}
+#custom-exit:hover {
+    background-color: rgba(40,40,40,0.8);
 }
 
 #clock,
