@@ -7,6 +7,8 @@
 @define-color textcolor2 #000000;
 @define-color textcolor3 #FFFFFF;
 @define-color iconcolor #FFFFFF;
+@define-color greensig #A3BE8C;
+@define-color redsig #BF616A;
 
 * {
     all: initial; /* disregard gtk theme!! */
@@ -132,7 +134,8 @@ tooltip label {
     font-size: 15px;
     color: @textcolor;
     margin: 0px 0px 0px 0px;
-    border-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
 
 /* -----------------------------------------------------
@@ -159,16 +162,15 @@ tooltip label {
  * Battery
  * ----------------------------------------------------- */
 #battery {
-    background-color: rgba(0,0,0,0.8);
-    color: #000000;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #FFFFFF;
     border-top-left-radius: 16px;
     border-bottom-left-radius: 16px;
     margin-left: 8px;
 }
 
 #battery.charging, #battery.plugged {
-    color: #ffffff;
-    background-color: #26A65B;
+    color: @greensig;
 }
 
 @keyframes blink {
@@ -179,8 +181,7 @@ to {
 }
 /* Using steps() instead of linear as a timing function to limit cpu usage */
 #battery.critical:not(.charging) {
-    background-color: #f53c3c;
-    color: #ffffff;
+    color: @redsig;
     animation-name: blink;
     animation-duration: 0.5s;
     animation-timing-function: steps(12);
@@ -220,14 +221,15 @@ to {
  * Network 
  * ----------------------------------------------------- */
 #network {
-    background-color: #26A65B;
-    border-top-right-radius: 16px;
-    border-bottom-right-radius: 16px;
-    margin-right: 8px;
+    color: @greensig;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+    padding: 0 8 0 12px;
 }
 
 #network.disconnected {
-    background-color: #f53c3c;
+    color: @redsig;
 }
 
 /* -----------------------------------------------------
@@ -235,8 +237,8 @@ to {
  * ----------------------------------------------------- */
 #tray {
     background-color: rgba(0,0,0,0.8);
-    border-top-left-radius: 16px;
-    border-bottom-left-radius: 16px;
+    border-radius: 16px;
+    margin-right: 8px;
 }
 
 #tray > .passive {
@@ -268,7 +270,6 @@ to {
 #disk,
 #temperature,
 #backlight,
-#network,
 #pulseaudio,
 #wireplumber,
 #custom-media,
