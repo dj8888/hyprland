@@ -3,13 +3,18 @@
 # Path to your wallpaper directory
 WALLPAPER_DIR="/mnt/data/Wallpapers/" 
 
+WALLPAPER_LIST=$(ls "$WALLPAPER_DIR")
 # Pipe files in wofi to choose one
-CHOSEN=$(ls "$WALLPAPER_DIR" | wofi -i --dmenu)
+CHOSEN=$(printf "SURPRISE ME!\n$WALLPAPER_LIST" | wofi -i --dmenu)
 
 # Quit if nothing is choosen
 if [ -z "$CHOSEN" ]; then
     echo "No wallpaper selected."
     exit 1
+fi
+
+if [[ $CHOSEN == "SURPRISE ME!" ]]; then
+  CHOSEN=$(shuf -n 1 <<< "$WALLPAPER_LIST")
 fi
 
 CHOSEN="$WALLPAPER_DIR$CHOSEN" #Full path to file
