@@ -401,7 +401,8 @@
 
   // backlight:
   "backlight": {
-    "format": "{icon} {percent}%",
+    //"format": "{icon} {percent}%",
+    "format": "🖵 {percent}%",
     "format-icons": [
       "",
       "",
