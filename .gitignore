@@ -15,4 +15,6 @@ hypr/previous_wallpaper
 !qt6ct/
 !zsh/
 zsh/.zsh_history
+zsh/.zcompdump
 !.zshenv
+!yazi/
