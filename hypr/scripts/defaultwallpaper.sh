@@ -6,10 +6,12 @@ PREVIOUS_WALLPAPER_FILE="$HOME/.config/hypr/previous_wallpaper"
 
 echo "$PREVIOUS_WALLPAPER_FILE"
 # Check if previous wallpaper file exists
-if [ -f "$PREVIOUS_WALLPAPER_FILE" ]; then
-  echo "Previous wallpaper file found."
+if [ -L "$PREVIOUS_WALLPAPER_FILE" ]; then
+  echo "Previous wallpaper symlink found."
   # Read the previous wallpaper path from the file
-  PREVIOUS_WALLPAPER=$(< "$PREVIOUS_WALLPAPER_FILE")
+  #PREVIOUS_WALLPAPER=$(< "$PREVIOUS_WALLPAPER_FILE")
+  # Read the previous wallpaper path from the symlink
+  PREVIOUS_WALLPAPER=$(readlink "$PREVIOUS_WALLPAPER_FILE")
   
   # Check if the previous wallpaper file has a file path (handle potential removal)
   if [ -f "$PREVIOUS_WALLPAPER" ]; then

@@ -65,6 +65,16 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 #zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
+#y shell wrapper that provides the ability to change the current working directory when exiting Yazi.
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
+
 #fzf shell integration
 eval "$(fzf --zsh)"
 
@@ -75,7 +85,7 @@ alias ls="lsd"  #lsd
 alias ll="lsd -la"  #lsd
 alias cat='bat'
 alias fzf="fzf --preview='bat --color=always {}'"
-alias pq='pacman -Q | fzf --no-preview | awk "{print \$1}" | xargs -r pacman -Qi'
+alias pq='pacman -Q | fzf --no-preview | cut -d" " -f 1 | xargs -r pacman -Qi'
 
 alias ta='tmux a'
 alias tls='tmux ls'

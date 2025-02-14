@@ -32,4 +32,6 @@ hyprctl hyprpaper wallpaper ",$CHOSEN"
 
 PREVIOUS_WALLPAPER_FILE="$HOME/.config/hypr/previous_wallpaper"
 echo "Updating previous wallpaper..."
-echo "$CHOSEN" > "$PREVIOUS_WALLPAPER_FILE"
+# echo "$CHOSEN" > "$PREVIOUS_WALLPAPER_FILE"
+[[ -f "$PREVIOUS_WALLPAPER_FILE" ]] && rm "$PREVIOUS_WALLPAPER_FILE"  
+ln -s "$CHOSEN" "$PREVIOUS_WALLPAPER_FILE" 
