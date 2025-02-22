@@ -1,0 +1,18 @@
+#!/usr/bin/sh
+
+filename=$1
+target="$(dirname "${filename}")/../pdf"
+outputFile="$(basename "$filename" .md).pdf"
+
+mkdir -p $target
+
+pandoc \
+    --pdf-engine=xelatex \
+    -V "geometry:margin=1in" \
+    -o "$target/$outputFile" $filename &
+
+
+# -V 'mainfont:Noto Serif' \
+# -V 'mainfontoptions:Extension=.ttf, UprightFont=*, BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic' \
+# -V 'sansfont:Noto Sans' \
+# -V 'monofont:Noto Mono' \
