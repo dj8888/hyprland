@@ -31,7 +31,9 @@ hyprland config files
 - zsh 
 - yazi
 - wtype (for emoji picker script)
-- nvim pandoc texlive-latexextra texlive-xetex texlive-fontsrecommended (needed for: NoteTaker script)
+- needed for: NoteTaker script
+    - [nvim](https://github.com/dj8888/.config-nvim) (use my nvim config for proper support)
+    - pandoc texlive-latexextra texlive-xetex texlive-fontsrecommended
 
 ### Theming
 - qt6ct 
