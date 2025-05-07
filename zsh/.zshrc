@@ -88,11 +88,19 @@ alias ls="lsd"  #lsd
 alias ll="lsd -la"  #lsd
 alias cat='bat'
 alias fzf="fzf --preview='bat --color=always {}'"
-alias pq='pacman -Q | fzf --no-preview | cut -d" " -f 1 | xargs -r pacman -Qi'
-alias pqe='pacman -Qe | fzf --no-preview | cut -d" " -f 1 | xargs -r pacman -Qi'
+# alias pq='pacman -Q | fzf --no-preview --query="$1" | cut -d" " -f 1 | xargs -r pacman -Qi'
+pq() {
+    pacman -Q | fzf --no-preview --query="${1:-}" | cut -d" " -f 1 | xargs -r pacman -Qi
+}
+# alias pqe='pacman -Qe | fzf --no-preview | cut -d" " -f 1 | xargs -r pacman -Qi'
+pqe() {
+    pacman -Qe | fzf --no-preview --query="${1:-}" | cut -d" " -f 1 | xargs -r pacman -Qi
+}
 
 alias ta='tmux a'
 alias tls='tmux ls'
 alias tns='tmux new -s'
 alias tks='tmux kill-session -t'
 
+alias ydlls='yt-dlp --live-from-start -P ~/Downloads/'
+alias ydlp='yt-dlp -o "%(playlist_title)s/%(playlist_index)s - %(title)s.%(ext)s" -P "~/Downloads/"'

@@ -8,3 +8,6 @@ fi
 #Default editor config
 export EDITOR="/usr/bin/nvim"
 export VISUAL="$EDITOR"
+
+#Add hypr/scripts to system path
+export PATH="$HOME/.config/hypr/scripts:$PATH"

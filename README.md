@@ -1,5 +1,4 @@
-# hyprland
-hyprland config files
+# hyprland config files
 
 ## Table of Contents
 

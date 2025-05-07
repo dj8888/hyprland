@@ -13,3 +13,4 @@ zsh/.zsh_history
 zsh/.zcompdump
 !.zshenv
 !yazi/
+!yt-dlp/

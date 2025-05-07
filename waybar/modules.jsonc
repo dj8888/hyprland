@@ -340,7 +340,7 @@
     "tooltip-format-ethernet": " {ifname}\nIP: {ipaddr}\n up: {bandwidthUpBits} down: {bandwidthDownBits}",
     "tooltip-format-disconnected": "Disconnected",
     "max-length": 50,
-    "on-click": "kitty -e nmtui",
+    "on-click": "kitty --title nmtui -e nmtui",
   },
 
   // Battery
@@ -357,7 +357,8 @@
     "format-alt": "{icon}{time}",
     // "format-good": "", // An empty format will hide the module
     // "format-full": "",
-    "format-icons": [" ", " ", " ", " ", " "]
+    "format-icons": [" ", " ", " ", " ", " "],
+    "interval" : 5
   },
 
   // Pulseaudio

@@ -250,6 +250,16 @@ to {
     background-color: #eb4d4b;
 }
 
+#tray menu {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 5px; 
+    padding: 5px; 
+}
+
+#tray menu item {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
 #backlight {
     background-color: rgba(0,0,0,0.8);
 }
