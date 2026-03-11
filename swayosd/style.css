@@ -1,0 +1,61 @@
+/* SwayOSD — Minimal black theme (matches swaync / Hyprland rice) */
+
+@define-color osd_bg #0a0a0a;
+@define-color osd_bg_alpha rgba(0, 0, 0, 0.92);
+@define-color osd_border #1a1a1a;
+@define-color osd_fg #ffffff;
+@define-color osd_fg_dim #aaaaaa;
+@define-color osd_accent #89b4fa;
+
+window#osd {
+  border-radius: 16px;
+  border: 1px solid @osd_border;
+  background: @osd_bg_alpha;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+window#osd #container {
+  margin: 14px 18px;
+}
+
+window#osd image,
+window#osd label {
+  color: @osd_fg;
+}
+
+window#osd progressbar:disabled,
+window#osd image:disabled {
+  opacity: 0.5;
+}
+
+window#osd progressbar,
+window#osd segmentedprogress {
+  min-height: 6px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+}
+
+window#osd trough,
+window#osd segment {
+  min-height: inherit;
+  border-radius: inherit;
+  border: none;
+  background: @osd_border;
+}
+
+window#osd progress,
+window#osd segment.active {
+  min-height: inherit;
+  border-radius: inherit;
+  border: none;
+  background: @osd_fg;
+}
+
+window#osd segment {
+  margin-left: 6px;
+}
+
+window#osd segment:first-child {
+  margin-left: 0;
+}

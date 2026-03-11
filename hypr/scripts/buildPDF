@@ -1,0 +1,26 @@
+#!/usr/bin/sh
+
+if [ $# -eq 0 ]; then
+    echo "Usage: buildPDF <file.md> [file2.md ...]"
+    exit 1
+fi
+
+for filename in "$@"; do
+    if [ ! -f "$filename" ]; then
+        echo "File not found: $filename"
+        continue
+    fi
+
+    outputFile="$(basename "$filename" .md).pdf"
+    outputPath="$(dirname "$filename")/$outputFile"
+
+    echo "Building $outputPath ..."
+    pandoc -d prd "$filename" -o "$outputPath" 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "Done. Opening in Zathura."
+        zathura "$outputPath" &
+    else
+        echo "Failed to build: $filename"
+    fi
+done

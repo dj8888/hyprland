@@ -1,16 +1,24 @@
 /*
-#Include the following files:
+# === Tracked: un-ignore so config is complete when switching systems ===
 !.gitignore
+!README.md
+!buildPDF.md
+# Desktop / Hyprland
 !hypr/
 hypr/previous_wallpaper
-!wlogout/
+hypr/wallpaper_state
 !waybar/
+!swaync/
+!swayosd/
+!wlogout/
+!wofi/
 !kitty/
 !tmux/
-!wofi/
 !zsh/
 zsh/.zsh_history
 zsh/.zcompdump
 !.zshenv
 !yazi/
 !yt-dlp/
+# buildPDF: optional mermaid-cli puppeteer config
+!mermaid/

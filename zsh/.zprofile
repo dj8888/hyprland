@@ -9,5 +9,5 @@ fi
 export EDITOR="/usr/bin/nvim"
 export VISUAL="$EDITOR"
 
-#Add hypr/scripts to system path
-export PATH="$HOME/.config/hypr/scripts:$PATH"
+#Add hypr/scripts and local bin to system path
+export PATH="$HOME/.local/bin:$HOME/.config/hypr/scripts:$PATH"

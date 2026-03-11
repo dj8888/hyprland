@@ -1,37 +1,33 @@
 #!/bin/bash
 
-# Path to your wallpaper directory
-WALLPAPER_DIR="/mnt/data/Wallpapers/" 
+source "$HOME/.config/hypr/scripts/wallpaper_common.sh"
+
+read_state
 
 WALLPAPER_LIST=$(ls "$WALLPAPER_DIR")
-# Pipe files in wofi to choose one
 CHOSEN=$(printf "SURPRISE ME!\n$WALLPAPER_LIST" | wofi -i --dmenu)
 
-# Quit if nothing is choosen
-if [ -z "$CHOSEN" ]; then
+if [[ -z "$CHOSEN" ]]; then
     echo "No wallpaper selected."
     exit 1
 fi
 
-if [[ $CHOSEN == "SURPRISE ME!" ]]; then
-  CHOSEN=$(shuf -n 1 <<< "$WALLPAPER_LIST")
+if [[ "$CHOSEN" == "SURPRISE ME!" ]]; then
+    CHOSEN=$(shuf -n 1 <<< "$WALLPAPER_LIST")
 fi
 
-CHOSEN="$WALLPAPER_DIR$CHOSEN" #Full path to file
-echo "$CHOSEN"
+CHOSEN="$WALLPAPER_DIR/$CHOSEN"
+TYPE=$(detect_type "$CHOSEN")
+echo "Selected: $CHOSEN ($TYPE)"
 
-if ! hyprctl hyprpaper preload "$WALLPAPER_DIR/temp.jpg" &> /dev/null; then
-  echo "Hyprpaper might not be running. Starting hyprpaper..."
-  hyprctl dispatch exec hyprpaper
-  sleep 0.5
+if [[ "$TYPE" == "live" ]]; then
+    apply_live "$CHOSEN"
+    MODE="live"
+    LIVE_WALLPAPER="$CHOSEN"
+else
+    apply_static "$CHOSEN"
+    MODE="static"
+    STATIC_WALLPAPER="$CHOSEN"
 fi
 
-hyprctl hyprpaper unload all
-hyprctl hyprpaper preload "$CHOSEN"
-hyprctl hyprpaper wallpaper ",$CHOSEN"
-
-PREVIOUS_WALLPAPER_FILE="$HOME/.config/hypr/previous_wallpaper"
-echo "Updating previous wallpaper..."
-# echo "$CHOSEN" > "$PREVIOUS_WALLPAPER_FILE"
-[[ -f "$PREVIOUS_WALLPAPER_FILE" ]] && rm "$PREVIOUS_WALLPAPER_FILE"  
-ln -s "$CHOSEN" "$PREVIOUS_WALLPAPER_FILE" 
+write_state

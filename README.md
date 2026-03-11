@@ -4,6 +4,7 @@
 
 -   [Installation](#installation)
 -   [Dependencies](#dependencies)
+-   [buildPDF](#buildpdf)
 
 ## Installation
 
@@ -11,61 +12,75 @@
 
 ## Dependencies
 
-### Essential Hyprland Environment
-- hyprland
-- hyprpaper
-- hyprlock
-- hypridle
-- hyprnotify (needs: libnotify)
-- hyprshot
-- xdg-desktop-portal-hyprland (needed for: screen recording and sharing)
-- wev
+*(Packages used by this config. “Optional / extra” = not required for keybinds/scripts but useful or installed on the reference system.)*
+
+### Essential Hyprland
+- **hyprland**
+- **hyprpaper** (static wallpapers)
+- **hyprlock** (lock screen)
+- **hypridle** (idle/DPMS)
+- **hyprshot** (screenshots; keybinds `mainMod+N` / `mainMod+Shift+N`)
+- **xdg-desktop-portal-hyprland** (screen sharing, file pickers)
+- **wev** (input debugging; optional)
+
+*Note: hyprnotify is not used in this config (exec-once is commented out). You can uninstall it if you use swaync for notifications.*
+
+### Hyprland plugins (hyprpm)
+- **hyprpm** (plugin manager; bundled with Hyprland). This config uses **hyprexpo** (workspace overview; gesture and `mainMod+TAB`). Install with:
+  ```bash
+  hyprpm add https://github.com/hyprland-community/hyprexpo
+  ```
+
+### Session / UI
+- **waybar** (bar)
+- **swaync** (notifications; gesture + `mainMod+M`)
+- **swayosd** (volume/brightness on-screen display)
+- **wofi** (app launcher, dmenu for cliphist/emoji)
+- **wlogout** (logout menu; `mainMod+Shift+L`)
+- **kitty** (terminal)
+- **tmux**, **zsh**, **yazi**
+- **wl-clipboard** (required by cliphist)
+- **cliphist** (clipboard history; `mainMod+V`)
+- **wtype** (used by wofi-emoji script; `mainMod+.`)
+- **playerctl** (media keys: play/pause, next, prev)
+- **ly** (display manager; optional if you start Hyprland another way)
+
+### Wallpaper scripts
+- **mpvpaper** (live/video wallpapers)
+- **jq** — lightweight CLI JSON processor. Used by `wallpaper_common.sh` to read monitor names from `hyprctl monitors -j` so mpvpaper can target each display. (Arch: `jq`)
 
 ### Tooling
-- wofi 
-- wlogout 
-- waybar 
-- kitty 
-- tmux 
-- dolphin 
-- zsh 
-- yazi
-- wl-clipboard
-- wtype (for emoji picker script)
-- tree
-- needed for: NoteTaker script
-    - [nvim](https://github.com/dj8888/.config-nvim) (use my nvim config for proper support)
-    - pandoc texlive-latexextra texlive-xetex texlive-fontsrecommended
+- **dolphin** (file manager; `mainMod+F`)
+- **tree**, **fzf**, **brightnessctl**
+- **Notetaker / notes** (`mainMod+E`, `mainMod+Shift+E`):
+  - [nvim](https://github.com/dj8888/.config-nvim) (recommended)
+  - **pandoc-cli** (or pandoc), **texlive-latexextra**, **texlive-xetex**, **texlive-fontsrecommended**
+  - **zathura**, **zathura-pdf-poppler**
 
 ### Theming
-- qt6ct 
-- qt5ct 
-- kavantum (theme: [Space](https://github.com/EliverLara/Space-kde))
-- nwg-look (theme: [Orchis](https://github.com/vinceliuice/Orchis-theme))
-- [Bibata Original Classic (Cursor Theme)](https://github.com/ful1e5/Bibata_Cursor)
-- ly
-- mpvpaper
-- noto-fonts noto-fonts-cjk noto-fonts-extra
-- ttf-fira-code otf-font-awesome
-- lsd
+- **qt6ct**, **qt5ct** (Qt theming)
+- **kvantum** (e.g. theme: [Space](https://github.com/EliverLara/Space-kde))
+- **nwg-look** (e.g. theme: [Orchis](https://github.com/vinceliuice/Orchis-theme))
+- **bibata-cursor-theme** (Bibata Original Classic)
+- **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
+- **ttf-fira-code**, **otf-font-awesome**
+- **lsd** (fancy `ls`)
 
-### Additional Tools
-- fzf
-- zsh
-- android-tools
-- blueman bluez bluez-utils
-- cmatrix-git
-- btop
-- git
-- google-chrome
-- discord
-- spotify
-- mpv
-- man-pages
-- networkmanager
-- iwd
-- tldr
-- powertop
-- thermald (for laptops)
-- zathura zathura-pdf-poppler
-- pipewire pavucontrol
+### Optional / extra
+*Not required by this config’s keybinds or scripts; handy for a full desktop or other workflows.*
+
+- **Android:** android-tools (adb, file transfer, debugging)
+- **Bluetooth:** blueman, bluez, bluez-utils
+- **Monitors / tuning:** btop, htop, nvtop, powertop
+- **Network:** networkmanager, network-manager-applet, iwd (nm-applet is commented in config but useful for tray)
+- **Audio:** pipewire, pipewire-alsa, pipewire-pulse, pavucontrol (needed for sound at all)
+- **Laptop:** thermald (thermal throttling)
+- **Browsers / apps:** google-chrome, discord, spotify, mpv
+- **Misc:** git, wget, tldr, man-pages
+- **ASUS laptops:** asusctl, rog-control-center (keybinds for these are commented out in config)
+
+---
+
+## buildPDF
+
+The `hypr/scripts/buildPDF` script builds PDFs from Markdown (with Mermaid diagram support). Setup is documented in a separate file: **[buildPDF.md](buildPDF.md)**.
