@@ -104,3 +104,15 @@ alias tks='tmux kill-session -t'
 
 alias ydlls='yt-dlp --live-from-start -P ~/Downloads/'
 alias ydlp='yt-dlp -o "%(playlist_title)s/%(playlist_index)s - %(title)s.%(ext)s" -P "~/Downloads/"'
+
+
+##flutter binaries (updates as req.)
+export PATH="$PATH:$HOME/dev/flutter/bin"
+export CHROME_EXECUTABLE=/usr/sbin/google-chrome-stable
+
+export ANDROID_HOME=$HOME/Android/Sdk
+export ANDROID_SDK_ROOT=$HOME/Android/Sdk
+
+export PATH=$PATH:$HOME/Android/Sdk/cmdline-tools/latest/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/emulator
