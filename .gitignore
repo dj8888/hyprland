@@ -20,5 +20,7 @@ zsh/.zcompdump
 !.zshenv
 !yazi/
 !yt-dlp/
+# Pacman: hooks (symlink into /etc/pacman.d/hooks) + options to reapply on new installs
+!pacman/
 # buildPDF: optional mermaid-cli puppeteer config
 !mermaid/

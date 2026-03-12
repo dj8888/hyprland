@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = archlinux-xdg-menu
+
+[Action]
+Description = Create KDE applications.menu symlink for Dolphin (Hyprland)
+When = PostTransaction
+Exec = /usr/bin/ln -sfn /etc/xdg/menus/arch-applications.menu /etc/xdg/menus/applications.menu

@@ -3,12 +3,24 @@
 ## Table of Contents
 
 -   [Installation](#installation)
+-   [One-time setup (per install)](#one-time-setup-per-install)
 -   [Dependencies](#dependencies)
 -   [buildPDF](#buildpdf)
 
 ## Installation
 
 > Install the required dependencies based on your system manually and clone the repo in ~/.config/
+
+### One-time setup (per install)
+
+After cloning on a new system, symlink the pacman hook so Dolphin (and other KDE apps) get the correct applications menu and MIME defaults on Hyprland:
+
+```bash
+sudo mkdir -p /etc/pacman.d/hooks
+sudo ln -sf ~/.config/pacman/hooks/arch-applications-menu.hook /etc/pacman.d/hooks/
+```
+
+Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `pacman/pacman.conf.snippet` to `/etc/pacman.conf`. See **[pacman/hooks/README.md](pacman/hooks/README.md)** for details.
 
 ## Dependencies
 
@@ -60,7 +72,10 @@
 ### Theming
 - **qt6ct**, **qt5ct** (Qt theming)
 - **kvantum** (e.g. theme: [Space](https://github.com/EliverLara/Space-kde))
-- **nwg-look** (e.g. theme: [Orchis](https://github.com/vinceliuice/Orchis-theme))
+- **nwg-look** (e.g. theme: [Orchis](https://github.com/vinceliuice/Orchis-theme)). This config uses the black variant; from the Orchis repo run:
+  ```bash
+  ./install.sh -t grey -c dark -s standard -l --tweaks black submenu
+  ```
 - **bibata-cursor-theme** (Bibata Original Classic)
 - **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
 - **ttf-fira-code**, **otf-font-awesome**
@@ -76,6 +91,7 @@
 - **Audio:** pipewire, pipewire-alsa, pipewire-pulse, pavucontrol (needed for sound at all)
 - **Laptop:** thermald (thermal throttling)
 - **Browsers / apps:** google-chrome, discord, spotify, mpv
+- **Image viewer (XDG default):** sxiv — set as default for images in `mimeapps.list`; with the pacman hook and `kbuildsycoca6` at session start, Dolphin respects these defaults on Hyprland
 - **Misc:** git, wget, tldr, man-pages
 - **ASUS laptops:** asusctl, rog-control-center (keybinds for these are commented out in config)
 
