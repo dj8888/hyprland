@@ -63,6 +63,6 @@ apply_live() {
     local monitors
     monitors=$(hyprctl monitors -j | jq -r '.[].name')
     for mon in $monitors; do
-        mpvpaper -o "no-audio loop hwdec=auto --panscan=1.0" "$mon" "$wallpaper" &
+        mpvpaper -o "no-audio loop hwdec=auto --panscan=1.0 --profile=fast" "$mon" "$wallpaper" &
     done
 }
