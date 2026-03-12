@@ -1,15 +1,25 @@
 #!/usr/bin/sh
 
-filename=$1
-target="$(dirname "${filename}")/../pdf"
+if [ $# -lt 1 ]; then
+    echo "Usage: buildNote <file.md>" >&2
+    exit 1
+fi
+
+filename="$1"
+if [ ! -f "$filename" ]; then
+    echo "buildNote: file not found: $filename" >&2
+    exit 1
+fi
+
+target="$(dirname "$filename")/../pdf"
 outputFile="$(basename "$filename" .md).pdf"
 
-mkdir -p $target
+mkdir -p "$target"
 
 pandoc \
     --pdf-engine=xelatex \
     -V "geometry:margin=1in" \
-    -o "$target/$outputFile" $filename &
+    -o "$target/$outputFile" "$filename"
 
 
 # -V 'mainfont:Noto Serif' \
