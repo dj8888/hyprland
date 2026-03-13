@@ -19,6 +19,7 @@ Create:
 Create **`~/.local/share/pandoc/defaults/prd.yaml`** (or `prd.yml`):
 
 ```yaml
+reader: markdown+mark   # enables ==highlighted text== in PDF (Pandoc "mark" extension)
 pdf-engine: xelatex
 standalone: true
 toc: true
@@ -43,6 +44,8 @@ variables:
 ```
 
 Replace `YOUR_USER` in the `include-in-header` path with your actual username (or use a path that works on your machine).
+
+With `reader: markdown+mark`, Pandoc treats `==highlighted text==` as marked text and outputs it in the PDF with a highlight (via the `soul` package’s `\hl{}` in the default LaTeX template). That matches how the Markdown preview extension shows it.
 
 ## 3. LaTeX header: `prd-header.tex`
 
