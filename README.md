@@ -51,9 +51,9 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **wlogout** (logout menu; `mainMod+Shift+L`)
 - **kitty** (terminal)
 - **tmux**, **zsh**, **yazi**
-- **wl-clipboard** (required by cliphist)
+- **wl-clipboard** (required by cliphist and wofi-emoji; provides `wl-copy`)
 - **cliphist** (clipboard history; `mainMod+V`)
-- **wtype** (used by wofi-emoji script; `mainMod+.`)
+- **wtype** (types selected text; required by wofi-emoji; `mainMod+.`)
 - **playerctl** (media keys: play/pause, next, prev)
 - **ly** (display manager; optional if you start Hyprland another way)
 
@@ -76,7 +76,8 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
   ```bash
   ./install.sh -t grey -c dark -s standard -l --tweaks black submenu
   ```
-- **bibata-cursor-theme** (Bibata Original Classic)
+- **bibata-cursor-theme** — cursor theme in use: **Bibata-Original-Classic** (size 24; set in `hypr/hyprland.conf` via `HYPRCURSOR_THEME` / `XCURSOR_THEME`)
+- **Cursor (IDE)** — color theme: **Black Italic** ([jaakko.black](https://github.com/Jaakkko/vscode-black-theme))
 - **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
 - **ttf-fira-code**, **otf-font-awesome**
 - **lsd** (fancy `ls`)
