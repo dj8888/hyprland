@@ -88,6 +88,7 @@ alias ls="lsd"  #lsd
 alias ll="lsd -la"  #lsd
 alias cat='bat'
 alias fzf="fzf --preview='bat --color=always {}'"
+alias gdu='gdu -c' #use terminal colors
 # alias pq='pacman -Q | fzf --no-preview --query="$1" | cut -d" " -f 1 | xargs -r pacman -Qi'
 pq() {
     pacman -Q | fzf --no-preview --query="${1:-}" | cut -d" " -f 1 | xargs -r pacman -Qi

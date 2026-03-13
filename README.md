@@ -65,7 +65,7 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **dolphin** (file manager; `mainMod+F`)
 - **tree**, **fzf**, **brightnessctl**
 - **Notetaker / notes** (`mainMod+E`, `mainMod+Shift+E`):
-  - [nvim](https://github.com/dj8888/.config-nvim) (recommended)
+  - [nvim](https://github.com/dj8888/.config-nvim) (recommended). In nvim: **`<leader>pd`** builds PDF from the current Markdown file using **buildPDF** (Mermaid diagram support; see [buildPDF](#buildpdf) below). Daily notes (`note-*.md`) build into `~/Documents/notes/pdf/` on save via **buildNote**.
   - **pandoc-cli** (or pandoc), **texlive-latexextra**, **texlive-xetex**, **texlive-fontsrecommended**
   - **zathura**, **zathura-pdf-poppler**
 
@@ -92,11 +92,11 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **Laptop:** thermald (thermal throttling)
 - **Browsers / apps:** google-chrome, discord, spotify, mpv
 - **Image viewer (XDG default):** sxiv — set as default for images in `mimeapps.list`; with the pacman hook and `kbuildsycoca6` at session start, Dolphin respects these defaults on Hyprland
-- **Misc:** git, wget, tldr, man-pages
+- **Misc:** git, wget, tldr, man-pages, gdu
 - **ASUS laptops:** asusctl, rog-control-center (keybinds for these are commented out in config)
 
 ---
 
 ## buildPDF
 
-The `hypr/scripts/buildPDF` script builds PDFs from Markdown (with Mermaid diagram support). Setup is documented in a separate file: **[buildPDF.md](buildPDF.md)**.
+The `hypr/scripts/buildPDF` script builds PDFs from Markdown (with Mermaid diagram support). In nvim, **`<leader>pd`** runs it on the current buffer and opens the PDF in Zathura. Setup is documented in a separate file: **[buildPDF.md](buildPDF.md)**.
