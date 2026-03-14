@@ -4,6 +4,7 @@ This directory is **tracked in dotfiles** so hooks and preferred options are the
 
 - **hooks/** – pacman hooks (must be symlinked into `/etc/pacman.d/hooks/` on each machine).
 - **pacman.conf.snippet** – options to reapply in `/etc/pacman.conf` on new installs (Color, ILoveCandy).
+- **pacman.multilib.snippet** – `[multilib]` section to enable if you need 32-bit packages (e.g. Steam, Wine, lib32-nvidia-utils). See the snippet; uncomment/add the block in `/etc/pacman.conf` as needed.
 
 ## One-time setup (per install)
 
@@ -15,6 +16,8 @@ sudo ln -sf ~/.config/pacman/hooks/arch-applications-menu.hook /etc/pacman.d/hoo
 ```
 
 **2. Pacman options (Color, ILoveCandy)** – ensure these lines exist in the `[options]` section of `/etc/pacman.conf` (see `../pacman.conf.snippet`). On a fresh install, add them if missing.
+
+**3. Multilib (optional)** – if you need 32-bit packages (e.g. for Steam, Wine, or hybrid NVIDIA setups with `lib32-nvidia-utils`), enable the `[multilib]` section in `/etc/pacman.conf` as shown in `../pacman.multilib.snippet`. Then run `sudo pacman -Sy`.
 
 ## Hooks
 

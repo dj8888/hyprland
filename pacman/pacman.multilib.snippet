@@ -1,0 +1,6 @@
+# Enable multilib for 32-bit packages (e.g. Steam, Wine, lib32-nvidia-utils).
+# On a new install: uncomment the [multilib] section in /etc/pacman.conf
+# and ensure it contains the following. Pacman only reads /etc/pacman.conf.
+
+[multilib]
+Include = /etc/pacman.d/mirrorlist

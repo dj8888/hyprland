@@ -19,7 +19,6 @@ Create:
 Create **`~/.local/share/pandoc/defaults/prd.yaml`** (or `prd.yml`):
 
 ```yaml
-reader: markdown+mark   # enables ==highlighted text== in PDF (Pandoc "mark" extension)
 pdf-engine: xelatex
 standalone: true
 toc: true
@@ -45,7 +44,7 @@ variables:
 
 Replace `YOUR_USER` in the `include-in-header` path with your actual username (or use a path that works on your machine).
 
-With `reader: markdown+mark`, Pandoc treats `==highlighted text==` as marked text and outputs it in the PDF with a highlight (via the `soul` package’s `\hl{}` in the default LaTeX template). That matches how the Markdown preview extension shows it.
+**Optional — `==highlighted text==` in the PDF:** To have Pandoc treat `==...==` as highlighted text (like the Markdown preview), you need (1) the **mark** reader and (2) the **soul** LaTeX package. Add `reader: markdown+mark` to `prd.yaml` (or run pandoc with `-f markdown+mark` in the script). Then install soul so LaTeX can find `soul.sty`. On Arch with TeX Live: install `texlive-bin` (for `tlmgr`) if needed, then run `tlmgr install soul`. Without soul, the PDF build will fail with “File soul.sty not found” if you enable the mark extension.
 
 ## 3. LaTeX header: `prd-header.tex`
 
@@ -197,4 +196,4 @@ end
   buildPDF path/to/file.md
   ```
 
-- Build runs `pandoc -d prd file.md -o file.pdf` and opens the PDF in Zathura. Mermaid blocks in `file.md` are rendered to images and included in the PDF.
+- The script runs `pandoc -d prd file.md -o file.pdf` and opens the PDF in Zathura. Mermaid blocks in `file.md` are rendered to images and included in the PDF.

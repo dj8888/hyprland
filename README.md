@@ -5,6 +5,7 @@
 -   [Installation](#installation)
 -   [One-time setup (per install)](#one-time-setup-per-install)
 -   [Dependencies](#dependencies)
+-   [Hybrid GPU (Intel + NVIDIA PRIME)](#hybrid-gpu-intel--nvidia-prime)
 -   [buildPDF](#buildpdf)
 
 ## Installation
@@ -20,7 +21,7 @@ sudo mkdir -p /etc/pacman.d/hooks
 sudo ln -sf ~/.config/pacman/hooks/arch-applications-menu.hook /etc/pacman.d/hooks/
 ```
 
-Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `pacman/pacman.conf.snippet` to `/etc/pacman.conf`. See **[pacman/hooks/README.md](pacman/hooks/README.md)** for details.
+Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `pacman/pacman.conf.snippet` to `/etc/pacman.conf`; if you need 32-bit packages (e.g. Steam, hybrid NVIDIA), enable `[multilib]` per `pacman/pacman.multilib.snippet`. See **[pacman/hooks/README.md](pacman/hooks/README.md)** for details.
 
 ## Dependencies
 
@@ -89,12 +90,70 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **Bluetooth:** blueman, bluez, bluez-utils
 - **Monitors / tuning:** btop, htop, nvtop, powertop
 - **Network:** networkmanager, network-manager-applet, iwd (nm-applet is commented in config but useful for tray)
-- **Audio:** pipewire, pipewire-alsa, pipewire-pulse, pavucontrol (needed for sound at all)
+- **Audio:** pipewire, pipewire-alsa, pipewire-pulse, pavucontrol (needed for sound at all), **qpwgraph** (PipeWire graph GUI for audio routing)
 - **Laptop:** thermald (thermal throttling)
 - **Browsers / apps:** google-chrome, discord, spotify, mpv
 - **Image viewer (XDG default):** sxiv — set as default for images in `mimeapps.list`; with the pacman hook and `kbuildsycoca6` at session start, Dolphin respects these defaults on Hyprland
 - **Misc:** git, wget, tldr, man-pages, gdu
 - **ASUS laptops:** asusctl, rog-control-center (keybinds for these are commented out in config)
+
+---
+
+## Hybrid GPU (Intel + NVIDIA PRIME)
+
+This config targets **Intel iGPU as primary** (compositor, desktop, video decode) with **NVIDIA dGPU for PRIME offload** only when requested. The dGPU stays idle (low power) until you launch apps with `prime-run`. Applicable to laptops and desktops with Intel + NVIDIA.
+
+### 1. Pacman and drivers
+
+- **Enable multilib** if needed for `lib32-nvidia-utils`: add the `[multilib]` block from [pacman/pacman.multilib.snippet](pacman/pacman.multilib.snippet) to `/etc/pacman.conf`, then `sudo pacman -Sy`.
+- Install NVIDIA and Vulkan packages:
+  ```bash
+  sudo pacman -S nvidia-dkms nvidia-utils nvidia-settings nvidia-prime vulkan-intel vulkan-tools lib32-nvidia-utils
+  ```
+
+### 2. NVIDIA runtime power management
+
+- Create `/etc/modprobe.d/nvidia-power.conf`:
+  ```
+  options nvidia NVreg_DynamicPowerManagement=0x02
+  ```
+- Rebuild initramfs: `sudo mkinitcpio -P`
+- Enable and start: `sudo systemctl enable --now nvidia-powerd`
+
+### 3. Hyprland (compositor on Intel)
+
+The repo’s `hypr/hyprland.conf` already sets env vars so the compositor and desktop run on the Intel GPU; Vulkan apps can still offload to NVIDIA when launched with `prime-run`. **Do not** set `__NV_PRIME_RENDER_OFFLOAD=1` globally, or the dGPU will stay active.
+
+Key ideas (see `hypr/hyprland.conf`): `LIBVA_DRIVER_NAME=iHD`, `GBM_BACKEND=intel-drm`, `WLR_DRM_DEVICES` pointing at the Intel DRM device (e.g. `/dev/dri/card0` or `card2` — check with `ls /dev/dri/` and pick the Intel card), and `__VK_LAYER_NV_optimus=NVIDIA_only` for offload.
+
+### 4. Verify
+
+- **Compositor on Intel:** `glxinfo | grep renderer` → expect Mesa Intel.
+- **NVIDIA idle:** `nvidia-smi` → expect low power state (e.g. P8), no unwanted processes.
+- **Runtime PM:** Check `power/control` and `power/runtime_status` under your NVIDIA PCI device (e.g. `/sys/bus/pci/devices/.../power/...`).
+
+### 5. Launch apps on the dGPU
+
+Use PRIME offload only when needed:
+
+```bash
+prime-run <app>
+```
+
+Examples: `prime-run steam`, `prime-run rpcs3`, `prime-run blender`.
+
+### 6. Optional: RPCS3 and gamepad
+
+- Install: `sudo pacman -S rpcs3`. Run with `prime-run rpcs3`. Install PS3 firmware via **File → Install Firmware** (download `PS3UPDAT.PUP` from Sony).
+- In RPCS3: **PPU/SPU Decoder → LLVM**, **Renderer → Vulkan**, choose the NVIDIA device, **Shader Mode → Async**. Add games via **File → Add Games** (e.g. after extracting an ISO so the folder contains `PS3_GAME/` and `PS3_DISC.SFB`).
+- Gamepad: install `jstest-gtk` and `game-devices-udev`, then **Pads → Configure Pads** (e.g. Handler **Evdev**, device `js0`), map to DualShock layout.
+
+### 7. Debugging GPU usage
+
+- See what’s using the dGPU: `nvidia-smi`; find processes: `sudo fuser -v /dev/nvidia*`.
+- Monitor GPUs: **nvtop** (and optionally **qpwgraph** for PipeWire audio routing).
+
+**Summary:** Compositor and desktop on Intel; video decode on Intel; games/Steam/RPCS3/Blender on NVIDIA via `prime-run`. dGPU stays in low power when not in use.
 
 ---
 
