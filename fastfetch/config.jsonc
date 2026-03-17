@@ -1,0 +1,61 @@
+{
+  "$schema": "https://github.com",
+  "logo": {
+    "type": "small",
+    "padding": {
+        "top": 2,
+        "left": 2
+    },
+    "color": {
+        "1": "blue" // This uses your terminal's color4 (#81A1C1)
+    }
+  },
+  "display": {
+    "separator": "  ",
+    "color": {
+        "keys": "blue",    // Labels in Nord Blue
+        "output": "white"  // Text in Nord White (#D8DEE9)
+    }
+  },
+  "modules": [
+    "title",
+    {
+        "type": "separator",
+        "string": "──────"
+    },
+    {
+        "type": "os",
+        "key": "os  "
+    },
+    {
+        "type": "kernel",
+        "key": "ker "
+    },
+    {
+        "type": "uptime",
+        "key": "upt "
+    },
+    {
+        "type": "packages",
+        "key": "pkg "
+    },
+    {
+        "type": "wm",
+        "key": "wm  "
+    },
+    {
+        "type": "terminal",
+        "key": "term"
+    },
+    {
+        "type": "memory",
+        "key": "mem "
+    },
+    "break",
+    {
+        "type": "colors",
+        "symbol": "circle"
+    }
+  ]
+}
+

@@ -24,3 +24,4 @@ zsh/.zcompdump
 !pacman/
 # buildPDF: optional mermaid-cli puppeteer config
 !mermaid/
+!fastfetch/

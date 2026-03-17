@@ -83,6 +83,7 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
 - **ttf-fira-code**, **otf-font-awesome**
 - **lsd** (fancy `ls`)
+- **fastfetch** (system info at login / on demand; config in `fastfetch/`)
 
 ### Optional / extra
 *Not required by this config’s keybinds or scripts; handy for a full desktop or other workflows.*
