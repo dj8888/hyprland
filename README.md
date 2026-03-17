@@ -52,6 +52,7 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **wlogout** (logout menu; `mainMod+Shift+L`)
 - **kitty** (terminal)
 - **tmux**, **zsh**, **yazi**
+  - **tmux-sessionizer**: `tns` (shell alias) launches it; in tmux use **`prefix + f`** to open it in a new window. (`~/.config/hypr/scripts` is on `PATH` via `zsh/.zprofile`.)
 - **wl-clipboard** (required by cliphist and wofi-emoji; provides `wl-copy`)
 - **cliphist** (clipboard history; `mainMod+V`)
 - **wtype** (types selected text; required by wofi-emoji; `mainMod+.`)
