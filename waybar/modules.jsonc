@@ -358,7 +358,7 @@
     // "format-good": "", // An empty format will hide the module
     // "format-full": "",
     "format-icons": [" ", " ", " ", " ", " "],
-    "interval" : 5
+    "interval": 15
   },
 
   // Pulseaudio
