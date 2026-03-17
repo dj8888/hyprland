@@ -100,7 +100,8 @@ pqe() {
 
 alias ta='tmux a'
 alias tls='tmux ls'
-alias tns='tmux new -s'
+# alias tns='tmux new -s'
+alias tns='tmux-sessionizer'
 alias tks='tmux kill-session -t'
 
 alias ydlls='yt-dlp --live-from-start -P ~/Downloads/'
