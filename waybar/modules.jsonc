@@ -340,7 +340,8 @@
     "tooltip-format-ethernet": " {ifname}\nIP: {ipaddr}\n up: {bandwidthUpBits} down: {bandwidthDownBits}",
     "tooltip-format-disconnected": "Disconnected",
     "max-length": 50,
-    "on-click": "kitty --title nmtui -e nmtui",
+    "on-click": "nm-connection-editor",
+    "on-click-right": "kitty --title nmtui -e nmtui",
   },
 
   // Battery
