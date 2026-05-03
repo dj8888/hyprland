@@ -97,6 +97,9 @@ pq() {
 pqe() {
     pacman -Qe | fzf --no-preview --query="${1:-}" | cut -d" " -f 1 | xargs -r pacman -Qi
 }
+# Add this to your shell configuration file (~/.bashrc or ~/.zshrc)
+# Requires 'bat' for previews (install via `brew install bat` or `apt get install bat`)
+# alias fe='fzf -m --preview="bat --color=always {}" --bind "enter:become(nvim {+})" --prompt="Files > "'
 
 alias ta='tmux a'
 alias tls='tmux ls'
