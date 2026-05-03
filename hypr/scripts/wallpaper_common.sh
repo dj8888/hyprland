@@ -28,9 +28,9 @@ read_state() {
 
 write_state() {
     cat > "$STATE_FILE" <<EOF
-MODE=$MODE
-STATIC_WALLPAPER=$STATIC_WALLPAPER
-LIVE_WALLPAPER=$LIVE_WALLPAPER
+MODE="$MODE"
+STATIC_WALLPAPER="$STATIC_WALLPAPER"
+LIVE_WALLPAPER="$LIVE_WALLPAPER"
 EOF
 }
 
@@ -64,5 +64,6 @@ apply_live() {
     monitors=$(hyprctl monitors -j | jq -r '.[].name')
     for mon in $monitors; do
         mpvpaper -o "no-audio loop hwdec=auto --panscan=1.0 --profile=fast" "$mon" "$wallpaper" &
+        # prime-run mpvpaper --vo=gpu-next --target-colorspace-hint=yes -o "no-audio loop hwdec=auto --panscan=1.0 --profile=fast" "$mon" "$wallpaper" &
     done
 }
