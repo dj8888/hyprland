@@ -2,10 +2,12 @@
 
 # from https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
 
+base_dirs=(~/works ~/indecimal ~/.config ~/personal)
+
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    selected=$(find ~/works ~/indecimal ~/.config -mindepth 1 -maxdepth 1 -type d | fzf)
+    selected=$( { printf '%s\n' "${base_dirs[@]}"; find "${base_dirs[@]}" -mindepth 1 -maxdepth 1 -type d; } | fzf)
 fi
 
 if [[ -z $selected ]]; then
