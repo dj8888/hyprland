@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Push-to-talk STT: start recording (hold or press again to stop via stt-stop.sh).
-# Notify on start. Requires same deps as stt.sh; run stt-stop.sh to stop and transcribe.
+# Push-to-talk STT: start recording AND start loading whisper in parallel.
+# Stop with stt-stop.sh.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$SCRIPT_DIR/ai-services.sh"
 
 PUSH_WAV="${TMPDIR:-/tmp}/stt-push.wav"
 PUSH_PID="${TMPDIR:-/tmp}/stt-push.pid"
 
 if [[ -f "$PUSH_PID" ]]; then
-  # Already recording; stop is handled by stt-stop.sh
-  exit 0
+  exit 0  # already recording; stt-stop.sh handles teardown
 fi
+
+# Kick off whisper load in the background — it warms up while you talk.
+start_whisper
 
 notify-send -t 1000 "STT" "Get ready…"
 sleep 1
@@ -22,4 +27,4 @@ else
   exit 1
 fi
 echo $! > "$PUSH_PID"
-notify-send -t 30000 "STT" "Recording…"
+notify-send -t 1500 "STT" "Recording…"

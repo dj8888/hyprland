@@ -6,7 +6,7 @@
 -   [One-time setup (per install)](#one-time-setup-per-install)
 -   [Dependencies](#dependencies)
 -   [Hybrid GPU (Intel + NVIDIA PRIME)](#hybrid-gpu-intel--nvidia-prime)
--   [Speech-to-Text and Text-to-Speech](#speech-to-text-and-text-to-speech)
+-   [Speech-to-Text, Text-to-Speech, and Ponti (local voice AI)](#speech-to-text-text-to-speech-and-ponti-local-voice-ai)
 -   [buildPDF](#buildpdf)
 -   [tmux-file-picker](#tmux-file-picker)
 -   [Claude Code Profiles](#claude-code-profiles)
@@ -163,16 +163,57 @@ Examples: `prime-run steam`, `prime-run rpcs3`, `prime-run blender`.
 
 ---
 
-## Speech-to-Text and Text-to-Speech
+## Speech-to-Text, Text-to-Speech, and Ponti (local voice AI)
 
-Lightweight, local STT (faster-whisper) and TTS (Kokoro) workflows for Hyprland. Scripts live in `hypr/scripts/`.
+Lightweight, fully local voice stack for Hyprland: dictation (faster-whisper) → Kokoro TTS, plus **Ponti**, a voice-driven LLM assistant on top of `ollama` (gemma3:4b). Scripts live in `hypr/scripts/`.
+
+The dGPU stays in low-power idle until a script needs it. `faster-whisper-server` and `ollama serve` are **lazy-loaded** on demand (with `prime-run`) and unloaded once the action completes — see [Lazy loading & dGPU power](#lazy-loading--dgpu-power) below.
 
 ### Keybindings
 
 | Key | Script | Description |
 |-----|--------|-------------|
-| `Super+T` | `tts.sh` | Speak clipboard aloud via Kokoro → mpv. Pressing again stops current playback and starts fresh. Notifies on play. |
-| `Super+U` | `stt-toggle.sh` | **Toggle STT** — first press starts recording (1s prep delay so you can move hands away), second press stops and transcribes. Text is typed at cursor and copied to clipboard. |
+| `Super+T` | `tts.sh` | Speak clipboard via Kokoro → mpv. Pressing again stops and restarts. |
+| `Super+U` | `stt-toggle.sh` | **Dictation toggle.** 1st press: warm whisper + start recording (1s prep). 2nd press: stop, transcribe, type at cursor + clipboard, unload whisper. |
+| `Super+A` | `ponti-ai-local.sh oneshot` | **Ponti — one-shot.** Voice question, single answer, no memory. Toggle: 1st press records, 2nd press transcribes → asks gemma3:4b → speaks reply, then unloads ollama + whisper. |
+| `Super+Shift+A` | `ponti-ai-local.sh chat` | **Ponti — conversation.** Same toggle, but keeps chat history at `~/.local/state/ponti/conversation.json`. Auto-resets after 10 min idle. Say "bye ponti" / "end conversation" / "goodbye" to end and unload. |
+| `Super+Ctrl+A` | `ponti-end.sh` | **Stop Ponti** manually — clear conversation, unload ollama + whisper. |
+| `Super+X` | `swaync-client -t` | Toggle the notification panel. (Moved from `Super+A` to free that key for Ponti.) |
+
+### Ponti modes & conversation state
+
+- **oneshot** (`Super+A`) — every press is a fresh turn with no prior context. Use it for quick questions ("what's my battery", "what time is it in Lisbon"). After the reply, ollama is stopped so the dGPU can idle.
+- **chat** (`Super+Shift+A`) — multi-turn. The full message history is persisted to `~/.local/state/ponti/conversation.json`. ollama is kept warm between turns so follow-ups are fast. The conversation auto-resets the next time you start chat after `$CHAT_IDLE_TIMEOUT` seconds of inactivity (default `600` = 10 min). To end deliberately, either say a farewell phrase or press `Super+Ctrl+A`.
+
+The voice end-trigger is regex-matched (case-insensitive) against the transcript: phrases like *bye*, *goodbye*, *end conversation*, *stop ponti*, *exit*, *see you* (optionally followed by *ponti / chat / conversation / talking*). When detected, Ponti speaks a farewell, deletes the conversation file, and unloads both services.
+
+#### Safe word
+
+Ponti's persona is, deliberately, a lot. If you need her to drop the bit and just answer cleanly — formal tone, no sass, no flirting, no opinions — include the word **`penumbra`** anywhere in the prompt. That single response will be direct and professional; the next message without it snaps her back to full Ponti. The word is chosen so the medium whisper model reliably catches it and it doesn't accidentally trigger in normal conversation.
+
+### System context (fastfetch)
+
+Ponti's system prompt embeds a curated snapshot from `fastfetch --logo none --pipe true -s <modules>` so it knows about the machine. Current modules:
+
+```
+title:os:host:chassis:kernel:uptime:cpu:gpu:memory:swap:disk:battery:poweradapter:
+display:de:wm:theme:icons:cursor:font:shell:terminal:locale:datetime:localip:wifi:sound
+```
+
+This includes both GPUs, battery + AC state, display panel, Wi-Fi SSID and signal, sound device, locale, current date/time, GTK/Qt themes, icons, cursor, and fonts. Tweak the `structure` variable in `ponti-ai-local.sh:system_context()` to add/remove modules — see `fastfetch --list-modules`. Avoid `weather` and `publicip` (they roundtrip the network on every press).
+
+### Lazy loading & dGPU power
+
+This config targets Intel iGPU for the compositor and offloads only AI workloads to NVIDIA via `prime-run`. To keep the dGPU in low-power idle whenever possible:
+
+| Service | When it starts | When it stops |
+|---------|---------------|---------------|
+| `faster-whisper-server` (~1.3 GiB VRAM) | When STT or Ponti is triggered, in parallel with recording so it warms up while you talk. | Right after transcription completes (set `STT_KEEP_WHISPER=1` to skip). |
+| `ollama serve` (~2.4 GiB VRAM for gemma3:4b) | When Ponti is triggered. | After replying in oneshot mode. In chat mode it stays loaded until you say a farewell or press `Super+Ctrl+A`. |
+
+The shared lib `hypr/scripts/ai-services.sh` provides `start_/wait_/ensure_/stop_whisper` and the same set for `ollama`. Both use `prime-run` so the dGPU is the target.
+
+**VRAM headroom note (NVIDIA T1200, 4 GiB):** whisper-medium + gemma3:4b together use ~3.7 GiB. That works, but there's only ~390 MiB free, so heavier models will OOM. The lazy-unload behavior keeps you from holding both in VRAM when not in use.
 
 ### Installation (Arch Linux)
 
@@ -221,44 +262,91 @@ Lightweight, local STT (faster-whisper) and TTS (Kokoro) workflows for Hyprland.
 
    The `tts.sh` script looks for models in `KOKORO_DIR` (default: `~/.local/share/kokoro-tts`), so no extra config needed.
 
-4. **STT backend — faster-whisper** (recommended for x86 Linux)
+4. **STT backend — faster-whisper** (x86 Linux with NVIDIA GPU)
 
    ```bash
    uv tool install faster-whisper-server
    ```
 
-   Start the server (runs on port 9001, OpenAI-compatible API):
+   **Fix missing pyproject.toml** (bug in the installed package — run once):
    ```bash
-   CUDA_VISIBLE_DEVICES="" faster-whisper-server --port 9001 Systran/faster-whisper-small
+   echo -e '[project]\nversion = "0.0.0"' > ~/.local/share/uv/tools/faster-whisper-server/lib/python3.12/site-packages/pyproject.toml
    ```
 
-   `CUDA_VISIBLE_DEVICES=""` forces CPU mode — required unless you have CUDA libraries installed (`sudo pacman -S cuda`). First run downloads the model (~500 MB for `small`).
-
-   For autostart, add to `hyprland.conf`:
-   ```ini
-   exec-once = CUDA_VISIBLE_DEVICES="" faster-whisper-server --port 9001 Systran/faster-whisper-small
+   **CUDA 12 → 13 compatibility** (Arch ships CUDA 13, faster-whisper expects 12 — create symlinks once):
+   ```bash
+   sudo ln -s /opt/cuda/lib64/libcublas.so.13   /opt/cuda/lib64/libcublas.so.12
+   sudo ln -s /opt/cuda/lib64/libcublasLt.so.13 /opt/cuda/lib64/libcublasLt.so.12
+   sudo ln -s /opt/cuda/lib64/libcudart.so.13   /opt/cuda/lib64/libcudart.so.12
+   sudo ldconfig
    ```
+
+   The server is **lazy-loaded** by the scripts (see `ai-services.sh`); no autostart is needed. To run manually:
+   ```bash
+   LD_LIBRARY_PATH=/opt/cuda/lib64:$LD_LIBRARY_PATH prime-run faster-whisper-server --port 9001 Systran/faster-whisper-medium
+   ```
+
+   First run downloads the model (~1.5 GB for `medium`). For CPU-only (no NVIDIA), replace `prime-run` with `CUDA_VISIBLE_DEVICES=""`.
 
    **Apple Silicon alternative:** install `parakeet-mlx` so it's on `PATH`; scripts auto-detect it and skip the HTTP API.
+
+5. **LLM backend — ollama + gemma3:4b** (required for Ponti)
+
+   ```bash
+   sudo pacman -S ollama       # or: yay -S ollama-cuda
+   ollama pull gemma3:4b
+   ```
+
+   ollama is **lazy-started** as `prime-run ollama serve` by `ponti-ai-local.sh`. To run manually:
+   ```bash
+   prime-run ollama serve
+   ```
+
+   If you also want the systemd service to coexist, leave `ollama.service` disabled so the scripts own the lifecycle.
 
 ### Environment variables
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `KOKORO_DIR` | `~/.local/share/kokoro-tts` | Directory with Kokoro model files |
-| `PARAKEET_URL` | `http://127.0.0.1:9001/v1/audio/transcriptions` | STT service endpoint |
-| `STT_MODEL` | `Systran/faster-whisper-base` | Model name sent to the STT service |
-| `STT_NOTIFY` | `0` | Set to `1` for desktop notifications during STT |
+| `KOKORO_VOICE` | `af_bella:40,af_nicole:60` | Kokoro voice name or blend (`name:weight,name:weight` — two voices max). See `kokoro-tts --help-voices`. |
+| `KOKORO_SPEED` | `0.92` | Speech speed (1.0 = default). Slightly slow reads more sultry. |
+| `KOKORO_LANG` | `en-us` | Kokoro language code. |
+| `WHISPER_PORT` | `9001` | Port faster-whisper-server listens on |
+| `WHISPER_MODEL` | `Systran/faster-whisper-medium` | Model name passed to faster-whisper-server |
+| `WHISPER_URL` | `http://127.0.0.1:$WHISPER_PORT` | Base URL for the STT service |
+| `STT_NOTIFY` | `0` | Set to `1` for desktop notifications during single-shot STT |
+| `STT_KEEP_WHISPER` | `0` | Set to `1` to skip unloading whisper after transcription |
+| `OLLAMA_URL` | `http://127.0.0.1:11434` | ollama base URL |
+| `OLLAMA_MODEL` | `gemma3:4b` | Model Ponti queries |
+| `PONTI_STATE_DIR` | `~/.local/state/ponti` | Directory for the chat-mode conversation file |
+| `CHAT_IDLE_TIMEOUT` | `600` | Seconds before a chat-mode session is auto-reset on next invocation |
+
+### Scripts (`hypr/scripts/`)
+
+| File | Purpose |
+|------|---------|
+| `ai-services.sh` | Shared lib: `start_/wait_/ensure_/stop_whisper` and same for ollama. Sourced by the others. |
+| `tts.sh` | Kokoro → mpv. |
+| `stt.sh` | Single-shot dictation (fixed `RECORD_SECONDS`, default 10s). |
+| `stt-push.sh` / `stt-stop.sh` / `stt-toggle.sh` | Push-to-talk dictation. `stt-push` warms whisper in parallel with recording. |
+| `ponti-ai-local.sh [oneshot\|chat]` | Voice agent toggle. Builds a fastfetch-based system prompt and pipes the transcript to gemma3:4b → TTS. |
+| `ponti-end.sh` | Manually end any Ponti session: clears conversation history, unloads whisper + ollama. |
 
 ### Testing
 
 ```bash
-# TTS (should speak the words and show a notification):
+# TTS:
 ~/.config/hypr/scripts/tts.sh "hello world"
 
-# STT walkie-talkie (needs faster-whisper-server running):
-~/.config/hypr/scripts/stt-push.sh   # start recording
-~/.config/hypr/scripts/stt-stop.sh   # stop + transcribe + type
+# Dictation toggle:
+~/.config/hypr/scripts/stt-toggle.sh   # press once, talk, press again
+
+# Ponti one-shot (records, transcribes, asks gemma3:4b, speaks reply):
+~/.config/hypr/scripts/ponti-ai-local.sh oneshot   # press once, talk, press again
+
+# Ponti chat (same, but keeps history at ~/.local/state/ponti/conversation.json):
+~/.config/hypr/scripts/ponti-ai-local.sh chat
 ```
 
 ---

@@ -5,6 +5,9 @@
 TTS_PID_FILE="${TMPDIR:-/tmp}/tts.pid"
 WORK_DIR="${TMPDIR:-/tmp}/tts-$$"
 KOKORO_DIR="${KOKORO_DIR:-$HOME/.local/share/kokoro-tts}"
+KOKORO_VOICE="${KOKORO_VOICE:-af_bella:40,af_nicole:60}"
+KOKORO_SPEED="${KOKORO_SPEED:-0.92}"
+KOKORO_LANG="${KOKORO_LANG:-en-us}"
 
 # Kill any running TTS playback
 if [[ -f "$TTS_PID_FILE" ]]; then
@@ -28,11 +31,23 @@ else
   TEXT=$(wl-paste -n 2>/dev/null || true)
 fi
 
+# Strip markdown / characters that TTS reads literally (asterisks, underscores,
+# backticks, leading hashes, link syntax). Keep punctuation that shapes prosody.
+TEXT=$(printf '%s' "$TEXT" \
+  | sed -E 's/\[([^]]+)\]\([^)]+\)/\1/g' \
+  | sed -E 's/[*_`]+//g' \
+  | sed -E 's/^[[:space:]]*#+[[:space:]]*//g' \
+  | sed -E 's/[[:space:]]+/ /g')
+
 [[ -n "$TEXT" ]] || {
   notify-send -u low "TTS" "No text (clipboard empty)"
   echo "tts: no text (use clipboard or pass as arguments)" >&2
   exit 1
 }
+
+PREVIEW_GEN="${TEXT:0:60}"
+[[ ${#TEXT} -gt 60 ]] && PREVIEW_GEN+="…"
+notify-send -t 1500 "TTS" "Generating: $PREVIEW_GEN"
 
 if ! command -v kokoro-tts &>/dev/null; then
   notify-send -u critical "TTS" "kokoro-tts not found"
@@ -46,10 +61,11 @@ if ! command -v mpv &>/dev/null; then
   exit 1
 fi
 
+KOKORO_ARGS=(--format wav --voice "$KOKORO_VOICE" --speed "$KOKORO_SPEED" --lang "$KOKORO_LANG")
 if [[ -d "$KOKORO_DIR" ]]; then
-  (cd "$KOKORO_DIR" && printf '%s' "$TEXT" | kokoro-tts - "$OUT" --format wav) 2>/dev/null || true
+  (cd "$KOKORO_DIR" && printf '%s' "$TEXT" | kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}") 2>/dev/null || true
 else
-  printf '%s' "$TEXT" | kokoro-tts - "$OUT" --format wav 2>/dev/null || true
+  printf '%s' "$TEXT" | kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}" 2>/dev/null || true
 fi
 
 [[ -f "$OUT" && -s "$OUT" ]] || {
@@ -58,7 +74,8 @@ fi
   exit 1
 }
 
-PREVIEW="${TEXT:0:50}${TEXT:50:+…}"
+PREVIEW="${TEXT:0:50}"
+[[ ${#TEXT} -gt 50 ]] && PREVIEW+="…"
 notify-send -t 4000 "TTS" "Speaking: $PREVIEW"
 
 mpv --no-terminal --no-video "$OUT" 2>/dev/null &
