@@ -25,3 +25,11 @@ zsh/.zcompdump
 # buildPDF: optional mermaid-cli puppeteer config
 !mermaid/
 !fastfetch/
+# Claude Code: profile dirs — only settings.json is safe to track
+!claude/
+!claude/personal/
+!claude/work/
+claude/personal/*
+claude/work/*
+!claude/personal/settings.json
+!claude/work/settings.json

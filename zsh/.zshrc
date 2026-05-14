@@ -68,6 +68,9 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 #Source zprofile
 source "${ZDOTDIR}/.zprofile"
 
+# Claude Code profile switching (work vs personal based on cwd)
+source "${ZDOTDIR}/claude-profiles.zsh"
+
 #y shell wrapper that provides the ability to change the current working directory when exiting Yazi.
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
