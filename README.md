@@ -6,7 +6,10 @@
 -   [One-time setup (per install)](#one-time-setup-per-install)
 -   [Dependencies](#dependencies)
 -   [Hybrid GPU (Intel + NVIDIA PRIME)](#hybrid-gpu-intel--nvidia-prime)
+-   [Speech-to-Text and Text-to-Speech](#speech-to-text-and-text-to-speech)
 -   [buildPDF](#buildpdf)
+-   [tmux-file-picker](#tmux-file-picker)
+-   [Claude Code Profiles](#claude-code-profiles)
 
 ## Installation
 
@@ -52,7 +55,8 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **wlogout** (logout menu; `mainMod+Shift+L`)
 - **kitty** (terminal)
 - **tmux**, **zsh**, **yazi**
-  - **tmux-sessionizer**: `tns` (shell alias) launches it; in tmux use **`prefix + f`** to open it in a new window. (`~/.config/hypr/scripts` is on `PATH` via `zsh/.zprofile`.)
+  - **tmux-sessionizer**: `tns` (shell alias) launches it; in tmux use **`prefix + s`** to open it in a new window. (`~/.config/hypr/scripts` is on `PATH` via `zsh/.zprofile`.)
+  - **tmux-file-picker**: fuzzy file/dir picker inside tmux popups. See [tmux-file-picker](#tmux-file-picker) below. Requires **fzf** and **fd**.
 - **wl-clipboard** (required by cliphist and wofi-emoji; provides `wl-copy`)
 - **cliphist** (clipboard history; `mainMod+V`)
 - **wtype** (types selected text; required by wofi-emoji; `mainMod+.`)
@@ -159,6 +163,170 @@ Examples: `prime-run steam`, `prime-run rpcs3`, `prime-run blender`.
 
 ---
 
+## Speech-to-Text and Text-to-Speech
+
+Lightweight, local STT (faster-whisper) and TTS (Kokoro) workflows for Hyprland. Scripts live in `hypr/scripts/`.
+
+### Keybindings
+
+| Key | Script | Description |
+|-----|--------|-------------|
+| `Super+T` | `tts.sh` | Speak clipboard aloud via Kokoro → mpv. Pressing again stops current playback and starts fresh. Notifies on play. |
+| `Super+U` | `stt-toggle.sh` | **Toggle STT** — first press starts recording (1s prep delay so you can move hands away), second press stops and transcribes. Text is typed at cursor and copied to clipboard. |
+
+### Installation (Arch Linux)
+
+1. **System packages**
+
+   ```bash
+   sudo pacman -S sox wl-clipboard ydotool mpv jq
+   ```
+
+2. **ydotool daemon** (required for typing at cursor)
+
+   ydotool needs access to `/dev/uinput`. Add yourself to the `input` group and fix the ACL (brltty strips group access on Arch):
+
+   ```bash
+   sudo usermod -aG input $USER   # re-login after
+   echo 'KERNEL=="uinput", RUN+="/usr/bin/setfacl -m g:input:rw /dev/%k"' | sudo tee /etc/udev/rules.d/99-uinput.rules
+   sudo udevadm control --reload-rules && sudo udevadm trigger
+   ```
+
+   Then start the daemon (add to Hyprland autostart):
+   ```bash
+   ydotoold &
+   # or in hyprland.conf:
+   # exec-once = ydotoold
+   ```
+
+3. **Kokoro TTS**
+
+   Kokoro requires Python <3.13. Arch ships Python 3.14+, so `pip install` won't work directly. Use **uv** instead — it's a fast Python package/tool manager (like pipx but also manages Python versions itself):
+
+   ```bash
+   sudo pacman -S uv              # install uv
+   uv python install 3.12         # download an isolated Python 3.12
+   uv tool install kokoro-tts --python 3.12   # installs kokoro-tts into its own venv
+   ```
+
+   `uv tool install` is equivalent to `pipx install` — it puts the `kokoro-tts` binary on your PATH without touching your system Python. The `--python 3.12` flag tells uv which Python version to use for the isolated environment.
+
+   Then download the model files:
+
+   ```bash
+   mkdir -p ~/.local/share/kokoro-tts && cd ~/.local/share/kokoro-tts
+   wget https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/kokoro-v1.0.onnx
+   wget https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/voices-v1.0.bin
+   ```
+
+   The `tts.sh` script looks for models in `KOKORO_DIR` (default: `~/.local/share/kokoro-tts`), so no extra config needed.
+
+4. **STT backend — faster-whisper** (recommended for x86 Linux)
+
+   ```bash
+   uv tool install faster-whisper-server
+   ```
+
+   Start the server (runs on port 9001, OpenAI-compatible API):
+   ```bash
+   CUDA_VISIBLE_DEVICES="" faster-whisper-server --port 9001 Systran/faster-whisper-small
+   ```
+
+   `CUDA_VISIBLE_DEVICES=""` forces CPU mode — required unless you have CUDA libraries installed (`sudo pacman -S cuda`). First run downloads the model (~500 MB for `small`).
+
+   For autostart, add to `hyprland.conf`:
+   ```ini
+   exec-once = CUDA_VISIBLE_DEVICES="" faster-whisper-server --port 9001 Systran/faster-whisper-small
+   ```
+
+   **Apple Silicon alternative:** install `parakeet-mlx` so it's on `PATH`; scripts auto-detect it and skip the HTTP API.
+
+### Environment variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `KOKORO_DIR` | `~/.local/share/kokoro-tts` | Directory with Kokoro model files |
+| `PARAKEET_URL` | `http://127.0.0.1:9001/v1/audio/transcriptions` | STT service endpoint |
+| `STT_MODEL` | `Systran/faster-whisper-base` | Model name sent to the STT service |
+| `STT_NOTIFY` | `0` | Set to `1` for desktop notifications during STT |
+
+### Testing
+
+```bash
+# TTS (should speak the words and show a notification):
+~/.config/hypr/scripts/tts.sh "hello world"
+
+# STT walkie-talkie (needs faster-whisper-server running):
+~/.config/hypr/scripts/stt-push.sh   # start recording
+~/.config/hypr/scripts/stt-stop.sh   # stop + transcribe + type
+```
+
+---
+
 ## buildPDF
 
 The `hypr/scripts/buildPDF` script builds PDFs from Markdown (with Mermaid diagram support). In nvim, **`<leader>pd`** runs it on the current buffer and opens the PDF in Zathura. Setup is documented in a separate file: **[buildPDF.md](buildPDF.md)**.
+
+---
+
+## Claude Code Profiles
+
+Context-based account switching so work (`~/indecimal`) and personal code never share a Claude session. Auth tokens, history, and project data are fully isolated per profile. Config in `zsh/claude-profiles.zsh`.
+
+### One-time login (per install)
+
+```bash
+# Personal — run from anywhere outside ~/indecimal
+claude-personal /login
+
+# Work — run from inside ~/indecimal (or use the alias)
+claude-work /login
+```
+
+### How it works
+
+The `claude()` shell function checks `pwd` on every invocation and sets `CLAUDE_CONFIG_DIR` accordingly:
+
+| cwd | Profile | Config dir |
+|-----|---------|------------|
+| `~/indecimal/**` | work | `~/.config/claude/work/` |
+| anywhere else | personal | `~/.config/claude/personal/` |
+
+The work profile prints a red **[WORK PROFILE]** warning to stderr before launching.
+
+Use the aliases to force a profile regardless of directory:
+
+```bash
+claude-personal   # always personal
+claude-work       # always work
+```
+
+### What git tracks
+
+Only `settings.json` (theme, effort level, etc.) is committed per profile. Sessions, auth tokens, history, projects, cache, and plans are gitignored.
+
+---
+
+## tmux-file-picker
+
+Fuzzy file and directory picker that pastes the selected path directly into the active tmux pane. Keybindings are in `tmux/tmux.conf`.
+
+### Installation
+
+```bash
+curl -Lo ~/.local/bin/tmux-file-picker https://raw.githubusercontent.com/raine/tmux-file-picker/main/tmux-file-picker
+chmod +x ~/.local/bin/tmux-file-picker
+```
+
+### Dependencies
+
+- **fzf** — fuzzy finder (`sudo pacman -S fzf`)
+- **fd** — fast file search, required by tmux-file-picker (`yay -S fd`)
+
+### Keybindings (tmux)
+
+| Binding | Action |
+|---------|--------|
+| `prefix + f` | Search all files in current directory |
+| `prefix + Ctrl+g` | Git-tracked / modified files only |
+| `prefix + Ctrl+r` | Directories only |
