@@ -12,6 +12,18 @@ OLLAMA_LOG="${OLLAMA_LOG:-/tmp/ollama-serve.log}"
 
 notify_ai() { notify-send -a "Ponti" "$@"; }
 
+# True when laptop is on AC power. Used by callers to skip dGPU unload
+# (keep ollama/whisper warm) when there's no battery cost.
+on_ac() {
+  local f val
+  for f in /sys/class/power_supply/A*/online; do
+    [[ -r "$f" ]] || continue
+    val=$(cat "$f" 2>/dev/null)
+    [[ "$val" = 1 ]] && return 0
+  done
+  return 1
+}
+
 _whisper_ready() {
   curl -sf --max-time 1 "$WHISPER_URL/openapi.json" >/dev/null 2>&1
 }

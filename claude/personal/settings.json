@@ -1,5 +1,4 @@
 {
-  "model": "opus",
-  "theme": "auto",
-  "effortLevel": "xhigh"
+  "effortLevel": "xhigh",
+  "theme": "auto"
 }

@@ -189,31 +189,141 @@ The voice end-trigger is regex-matched (case-insensitive) against the transcript
 
 #### Safe word
 
-Ponti's persona is, deliberately, a lot. If you need her to drop the bit and just answer cleanly — formal tone, no sass, no flirting, no opinions — include the word **`penumbra`** anywhere in the prompt. That single response will be direct and professional; the next message without it snaps her back to full Ponti. The word is chosen so the medium whisper model reliably catches it and it doesn't accidentally trigger in normal conversation.
+Ponti's persona is, deliberately, a lot. If you need her to drop the bit and just answer cleanly — formal tone, no sass, no flirting, no opinions — include the word **`penumbra`** anywhere in the prompt. That single response will be direct and professional; the next message without it snaps her back to full Ponti.
 
-### System context (fastfetch)
+This is **orchestrator-level**, not a model instruction: `ponti-ai-local.sh` greps the user text and swaps the entire system prompt (`build_penumbra_prompt` instead of `build_ponti_prompt`). The 4B model never has to "decide" to drop persona, so it can't leak. Penumbra also force-triggers a SearXNG search (see below).
 
-Ponti's system prompt embeds a curated snapshot from `fastfetch --logo none --pipe true -s <modules>` so it knows about the machine. Current modules:
+#### Text bypass (terminal / scripting)
+
+You can invoke Ponti without speaking by passing text directly:
+
+```bash
+ponti-ai-local.sh oneshot --text "what's the latest python version"
+ponti-ai-local.sh chat --text "remember I said the API key is on row 12"
+ponti-ai-local.sh oneshot --text "explain CQRS" --no-tts   # print to stdout
+ponti-ai-local.sh oneshot --text "look up rust 1.85" --no-tools  # skip search
+```
+
+Flags after the mode:
+- `--text "..."` — skip mic + STT, treat the string as the user turn.
+- `--no-tts` — print the reply to stdout instead of speaking it.
+- `--no-tools` — disable SearXNG routing for this invocation (useful when offline or testing).
+
+`tts.sh "any string"` also accepts a positional arg (already did) — clipboard is the fallback.
+
+### System context — live pulse + fastfetch identity
+
+Ponti's system prompt embeds two blocks:
+
+**Live pulse** (`live_pulse()` in `ponti-ai-local.sh`) — read fresh on every invocation, right before the LLM call. The persona prompt tells the model this is **ground truth** ("NEVER invent or round numbers"), which prevents gemma3:4b from hallucinating temperatures:
+
+- Power state (AC/battery) + battery %
+- CPU package temperature (`sensors -u`, Package id 0)
+- RAM used / total (`free -h`)
+- Disk / usage (`df -h /`)
+- Volume % (`wpctl`)
+- Bluetooth on/off (`bluetoothctl show`)
+- WiFi SSID (`nmcli`)
+- Foreground window class (`hyprctl activewindow`)
+
+Each call writes a one-line snapshot to `~/.local/state/ponti/pulse.log` for post-hoc verification (diff against the model's reply to detect hallucinated numbers).
+
+**Fastfetch identity** — curated snapshot of static info via `fastfetch --logo none --pipe true -s <modules>`:
 
 ```
 title:os:host:chassis:kernel:uptime:cpu:gpu:memory:swap:disk:battery:poweradapter:
 display:de:wm:theme:icons:cursor:font:shell:terminal:locale:datetime:localip:wifi:sound
 ```
 
-This includes both GPUs, battery + AC state, display panel, Wi-Fi SSID and signal, sound device, locale, current date/time, GTK/Qt themes, icons, cursor, and fonts. Tweak the `structure` variable in `ponti-ai-local.sh:system_context()` to add/remove modules — see `fastfetch --list-modules`. Avoid `weather` and `publicip` (they roundtrip the network on every press).
+Tweak the `structure` variable in `ponti-ai-local.sh:system_context()` to add/remove modules — see `fastfetch --list-modules`. Avoid `weather` and `publicip` (they roundtrip the network on every press).
 
-### Lazy loading & dGPU power
+### Lazy loading & dGPU power (AC-aware)
 
 This config targets Intel iGPU for the compositor and offloads only AI workloads to NVIDIA via `prime-run`. To keep the dGPU in low-power idle whenever possible:
 
 | Service | When it starts | When it stops |
 |---------|---------------|---------------|
-| `faster-whisper-server` (~1.3 GiB VRAM) | When STT or Ponti is triggered, in parallel with recording so it warms up while you talk. | Right after transcription completes (set `STT_KEEP_WHISPER=1` to skip). |
-| `ollama serve` (~2.4 GiB VRAM for gemma3:4b) | When Ponti is triggered. | After replying in oneshot mode. In chat mode it stays loaded until you say a farewell or press `Super+Ctrl+A`. |
+| `faster-whisper-server` (~1.3 GiB VRAM) | When STT or Ponti is triggered, in parallel with recording so it warms up while you talk. | After transcription if on battery. **On AC, stays warm** (set `STT_KEEP_WHISPER=1` to force-keep on battery). |
+| `ollama serve` (~2.4 GiB VRAM for gemma3:4b) | When Ponti is triggered. | After replying in oneshot mode if on battery. **On AC, stays warm**. In chat mode always stays loaded until farewell or `Super+Ctrl+A`. |
+| `kokoro-tts` (~310 MiB VRAM via ORT-CUDA) | Per-invocation under `prime-run`. | Exits with the script. |
 
-The shared lib `hypr/scripts/ai-services.sh` provides `start_/wait_/ensure_/stop_whisper` and the same set for `ollama`. Both use `prime-run` so the dGPU is the target.
+`ai-services.sh::on_ac()` reads `/sys/class/power_supply/A*/online`; in `ponti-ai-local.sh` every `stop_*` call is wrapped as `maybe_stop_*` which short-circuits when plugged in. `ponti-end.sh` always force-stops regardless of AC (manual override).
 
-**VRAM headroom note (NVIDIA T1200, 4 GiB):** whisper-medium + gemma3:4b together use ~3.7 GiB. That works, but there's only ~390 MiB free, so heavier models will OOM. The lazy-unload behavior keeps you from holding both in VRAM when not in use.
+**VRAM headroom note (NVIDIA T1200, 4 GiB):** whisper-medium + gemma3:4b together use ~3.7 GiB. That works, but there's only ~390 MiB free, so heavier models will OOM. The script always stops whisper before the LLM step to make room. Kokoro on GPU adds ~310 MiB during TTS, after whisper is gone — comfortable.
+
+### Kokoro TTS on the dGPU
+
+`tts.sh` runs `kokoro-tts` under `prime-run` with `ONNX_PROVIDER=CUDAExecutionProvider`. Auto-falls back to CPU if the GPU run produces no audio. Force CPU manually:
+
+```bash
+KOKORO_PROVIDER=CPUExecutionProvider ~/.config/hypr/scripts/tts.sh "hello"
+```
+
+**Install (one-time)** — two steps; the second is non-obvious:
+
+```bash
+# 1) Rebuild the kokoro venv with onnxruntime-gpu
+uv tool install --force --with onnxruntime-gpu kokoro-tts
+
+# 2) Install CUDA 12 + cuDNN 9 wheels INTO the kokoro venv.
+#    ORT 1.26 ships built against CUDA 12, but Arch's system CUDA is
+#    13.x — `libcufft.so.11` and `libcudnn.so.9` are missing. The pip
+#    wheels bundle the right versions inside the venv.
+VIRTUAL_ENV=~/.local/share/uv/tools/kokoro-tts uv pip install \
+  nvidia-cuda-runtime-cu12 nvidia-cudnn-cu12 nvidia-cufft-cu12 \
+  nvidia-cublas-cu12 nvidia-curand-cu12 nvidia-cusparse-cu12 \
+  nvidia-cusolver-cu12 nvidia-nvjitlink-cu12
+```
+
+`tts.sh` autodetects the bundled libs and prepends them to `LD_LIBRARY_PATH`. Total venv size ≈ 4.6 GB after this.
+
+**Verification:** while a TTS call is running, `nvidia-smi` should show `kokoro-tts/bin/python` consuming ~600 MiB of dGPU memory. CPU usage drops from ~225% (forced CPU) to ~130% (GPU offload) for typical Ponti replies.
+
+### Search via SearXNG (deterministic, no LLM routing)
+
+When Ponti needs facts she can't reliably know (post-cutoff, time-sensitive, etc.), the orchestrator hits a **local SearXNG** instance and injects the top results into the user message before the LLM call. The model never decides whether to search; a deterministic regex tree in `ponti-ai-local.sh::should_search()` does. Decision tree, first match wins:
+
+| # | Condition | Decision |
+|---|-----------|----------|
+| 1 | `--no-tools` flag / `NO_TOOLS=1` | NO |
+| 2 | SearXNG unreachable | NO |
+| 3 | `penumbra` in the user text (word-bounded) | YES (always when reachable) |
+| 4 | Ponti-self / specs / mood (`your cpu`, `tell me about yourself`, `how are you`, etc.) | NO |
+| 5 | Explicit override (`look up`, `search for`, `google`, `find out about`, `search:` prefix) | YES |
+| 6 | Time-sensitive trigger (`today`, `latest`, `recent`, `weather`, `who won`, `news on`, `breaking`, `2025-2029`, etc.) | YES |
+| 7 | Default | NO |
+
+All decisions are logged to `~/.local/state/ponti/router.log` for tuning.
+
+Search results are fetched via `hypr/scripts/tools/search.sh` (curl + jq on SearXNG's `format=json` endpoint, top 5 results, ~280-char snippets). They're injected into the user message as a `Search Results:` block; the Ponti persona has a closing rule telling the model to speak them as her own observations (no URLs, no "according to").
+
+**Setup (one-time):**
+
+```bash
+# 1. Clone source
+git clone --depth 1 https://github.com/searxng/searxng.git ~/.local/share/searxng/src
+
+# 2. Make a Python 3.12 venv with uv
+uv venv --python 3.12 ~/.local/share/searxng/venv
+
+# 3. Install deps (then editable install — needs --no-build-isolation
+#    because setup.py imports searx.version at build time)
+cd ~/.local/share/searxng/src
+VIRTUAL_ENV=~/.local/share/searxng/venv uv pip install -r requirements.txt
+VIRTUAL_ENV=~/.local/share/searxng/venv uv pip install setuptools
+VIRTUAL_ENV=~/.local/share/searxng/venv uv pip install --no-build-isolation -e .
+
+# 4. Settings → ~/.config/searxng/settings.yml (loopback, JSON format, no rate limiter)
+# 5. systemd user unit → ~/.config/systemd/user/searxng.service
+systemctl --user daemon-reload
+systemctl --user start searxng
+# (use `enable --now` if you want autostart, otherwise start manually)
+
+# 6. Smoke test
+curl -sfG "http://127.0.0.1:8888/search" --data-urlencode "q=test" --data-urlencode "format=json" | jq '.results | length'
+```
+
+Both `settings.yml` and `searxng.service` are tracked in this repo at `searxng/settings.yml` and `systemd/user/searxng.service` (adjust paths to taste).
 
 ### Installation (Arch Linux)
 
@@ -312,6 +422,10 @@ The shared lib `hypr/scripts/ai-services.sh` provides `start_/wait_/ensure_/stop
 | `KOKORO_VOICE` | `af_bella:40,af_nicole:60` | Kokoro voice name or blend (`name:weight,name:weight` — two voices max). See `kokoro-tts --help-voices`. |
 | `KOKORO_SPEED` | `0.92` | Speech speed (1.0 = default). Slightly slow reads more sultry. |
 | `KOKORO_LANG` | `en-us` | Kokoro language code. |
+| `KOKORO_PROVIDER` | `CUDAExecutionProvider` | ONNX Runtime EP for Kokoro. Set to `CPUExecutionProvider` to force CPU. |
+| `SEARXNG_URL` | `http://127.0.0.1:8888` | Local SearXNG base URL used by the search router and `tools/search.sh`. |
+| `SEARCH_RESULTS` | `5` | Top-N results pulled per query by `tools/search.sh`. |
+| `SEARCH_SNIPPET_LEN` | `280` | Per-result snippet length (chars) in the injected `Search Results:` block. |
 | `WHISPER_PORT` | `9001` | Port faster-whisper-server listens on |
 | `WHISPER_MODEL` | `Systran/faster-whisper-medium` | Model name passed to faster-whisper-server |
 | `WHISPER_URL` | `http://127.0.0.1:$WHISPER_PORT` | Base URL for the STT service |
@@ -326,12 +440,13 @@ The shared lib `hypr/scripts/ai-services.sh` provides `start_/wait_/ensure_/stop
 
 | File | Purpose |
 |------|---------|
-| `ai-services.sh` | Shared lib: `start_/wait_/ensure_/stop_whisper` and same for ollama. Sourced by the others. |
-| `tts.sh` | Kokoro → mpv. |
+| `ai-services.sh` | Shared lib: `start_/wait_/ensure_/stop_whisper` + same for ollama, plus `on_ac()` for AC detection. Sourced by the others. |
+| `tts.sh` | Kokoro → mpv. Runs Kokoro on dGPU via `prime-run` + `ONNX_PROVIDER=CUDAExecutionProvider`, falls back to CPU on failure. |
 | `stt.sh` | Single-shot dictation (fixed `RECORD_SECONDS`, default 10s). |
 | `stt-push.sh` / `stt-stop.sh` / `stt-toggle.sh` | Push-to-talk dictation. `stt-push` warms whisper in parallel with recording. |
-| `ponti-ai-local.sh [oneshot\|chat]` | Voice agent toggle. Builds a fastfetch-based system prompt and pipes the transcript to gemma3:4b → TTS. |
-| `ponti-end.sh` | Manually end any Ponti session: clears conversation history, unloads whisper + ollama. |
+| `ponti-ai-local.sh [oneshot\|chat] [--text "..."] [--no-tts] [--no-tools]` | Voice agent. Live pulse + fastfetch system prompt, randomized endearments, orchestrator-level penumbra swap, deterministic SearXNG router. |
+| `ponti-end.sh` | Manually end any Ponti session: clears conversation history, unloads whisper + ollama (force, regardless of AC). |
+| `tools/search.sh` | SearXNG bridge — curl + jq, top-N results with snippets. Called by the router, never by the model. |
 
 ### Testing
 
@@ -347,6 +462,15 @@ The shared lib `hypr/scripts/ai-services.sh` provides `start_/wait_/ensure_/stop
 
 # Ponti chat (same, but keeps history at ~/.local/state/ponti/conversation.json):
 ~/.config/hypr/scripts/ponti-ai-local.sh chat
+
+# Text bypass (skip mic + STT entirely; useful for scripting):
+~/.config/hypr/scripts/ponti-ai-local.sh oneshot --text "what's the cpu temp" --no-tts
+
+# Search router log (after a few queries):
+tail -f ~/.local/state/ponti/router.log
+
+# Pulse verification (diff numbers against what the model said):
+tail -f ~/.local/state/ponti/pulse.log
 ```
 
 ---

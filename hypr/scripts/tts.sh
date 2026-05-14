@@ -62,10 +62,48 @@ if ! command -v mpv &>/dev/null; then
 fi
 
 KOKORO_ARGS=(--format wav --voice "$KOKORO_VOICE" --speed "$KOKORO_SPEED" --lang "$KOKORO_LANG")
-if [[ -d "$KOKORO_DIR" ]]; then
-  (cd "$KOKORO_DIR" && printf '%s' "$TEXT" | kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}") 2>/dev/null || true
-else
-  printf '%s' "$TEXT" | kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}" 2>/dev/null || true
+
+# ONNX Runtime 1.26 needs CUDA 12 + cuDNN 9 libs. Arch ships CUDA 13 system-wide,
+# so we rely on the CUDA-12 wheels installed inside the kokoro venv. Build a
+# LD_LIBRARY_PATH pointing at every nvidia/*/lib dir in the venv.
+KOKORO_VENV="${KOKORO_VENV:-$HOME/.local/share/uv/tools/kokoro-tts}"
+KOKORO_NVIDIA_LIBS=""
+if [[ -d "$KOKORO_VENV/lib/python3.12/site-packages/nvidia" ]]; then
+  KOKORO_NVIDIA_LIBS=$(printf '%s:' "$KOKORO_VENV"/lib/python3.12/site-packages/nvidia/*/lib | sed 's/:$//')
+fi
+
+# Run kokoro on the dGPU via prime-run + CUDA ORT provider. Falls back to CPU
+# if the GPU run fails (missing kernel, OOM, no card visible to the offload
+# context). Set KOKORO_PROVIDER=CPUExecutionProvider to force CPU.
+run_kokoro() {
+  local provider="$1"
+  if [[ "$provider" = "CUDAExecutionProvider" ]] && command -v prime-run &>/dev/null; then
+    if [[ -d "$KOKORO_DIR" ]]; then
+      (cd "$KOKORO_DIR" && \
+        LD_LIBRARY_PATH="${KOKORO_NVIDIA_LIBS}:/opt/cuda/lib64:${LD_LIBRARY_PATH:-}" \
+        ONNX_PROVIDER="$provider" \
+        prime-run kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}" <<<"$TEXT") 2>/dev/null
+    else
+      LD_LIBRARY_PATH="${KOKORO_NVIDIA_LIBS}:/opt/cuda/lib64:${LD_LIBRARY_PATH:-}" \
+      ONNX_PROVIDER="$provider" \
+      prime-run kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}" <<<"$TEXT" 2>/dev/null
+    fi
+  else
+    if [[ -d "$KOKORO_DIR" ]]; then
+      (cd "$KOKORO_DIR" && ONNX_PROVIDER="$provider" \
+        kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}" <<<"$TEXT") 2>/dev/null
+    else
+      ONNX_PROVIDER="$provider" \
+      kokoro-tts - "$OUT" "${KOKORO_ARGS[@]}" <<<"$TEXT" 2>/dev/null
+    fi
+  fi
+}
+
+KOKORO_PROVIDER="${KOKORO_PROVIDER:-CUDAExecutionProvider}"
+run_kokoro "$KOKORO_PROVIDER" || true
+if [[ ! -s "$OUT" && "$KOKORO_PROVIDER" != "CPUExecutionProvider" ]]; then
+  notify-send -t 2000 "TTS" "GPU failed, falling back to CPU"
+  run_kokoro "CPUExecutionProvider" || true
 fi
 
 [[ -f "$OUT" && -s "$OUT" ]] || {
