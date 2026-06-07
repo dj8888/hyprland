@@ -31,5 +31,5 @@ zsh/.zcompdump
 !claude/work/
 claude/personal/*
 claude/work/*
-!claude/personal/settings.json
-!claude/work/settings.json
+claude/personal/settings.json
+claude/work/settings.
