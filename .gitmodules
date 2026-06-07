@@ -1,3 +1,6 @@
 [submodule "hypr/plugins/hycov"]
 	path = hypr/plugins/hycov
 	url = git@github-personal:dj8888/hycov.git
+[submodule "nvim"]
+	path = nvim
+	url = git@github-personal:dj8888/.config-nvim.git
