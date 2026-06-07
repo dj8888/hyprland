@@ -33,3 +33,5 @@ claude/personal/*
 claude/work/*
 claude/personal/settings.json
 claude/work/settings.
+#submodules
+!nvim
