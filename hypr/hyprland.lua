@@ -220,7 +220,10 @@ hl.config({
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 -- 3-up: hycov window overview (hyprexpo replacement; swipe up again or pick a window to close)
 hl.gesture({ fingers = 3, direction = "up", action = function()
-    hl.dispatch(hl.dsp.exec_cmd("hyprctl dispatch hycov:toggleoverview"))
+    -- pcall-wrapped: hl.plugin.hycov can transiently be nil right after a
+    -- config reload races Hyprland's own Lua-state reinit/replugin dance;
+    -- fail silently rather than surface a Lua error notification.
+    pcall(function() hl.plugin.hycov.toggleoverview() end)
 end })
 hl.gesture({ fingers = 3, direction = "down", action = function()
     hl.dispatch(hl.dsp.workspace.toggle_special("magic"))
@@ -244,6 +247,11 @@ hl.device({ name = "epic-mouse-v1", sensitivity = -0.5 })
 -- hypr/plugins/hycov, ported to Hyprland 0.55.2.
 -- Loaded here rather than via exec-once so its config keys exist when hl.config runs
 -- (`hyprctl keyword` does not work under the Lua config manager).
+-- 2026-09-24: ported off the legacy plugin config API (HyprlandAPI::getConfigValue/
+-- addConfigValue only work under Hyprland's classic .conf/CONFIG_LEGACY manager;
+-- this setup uses the Lua config manager, under which they unconditionally return
+-- nullptr/false) to the V2 API (Config::Values::CIntValue/CStringValue +
+-- addConfigValueV2, plus CConfigValue<T> for reading Hyprland's own core config).
 hl.plugin.load("/home/dj/.config/hypr/plugins/hycov/build/libhycov.so")
 
 -- Applied on start rather than at parse time: the plugin's config keys only exist once it
@@ -282,7 +290,7 @@ hl.bind(mainMod .. " + SHIFT + I", hl.dsp.layout("swapsplit"))
 -- extra additions:
 hl.bind(mainMod .. " + W",   hl.dsp.exec_cmd("google-chrome-stable"))
 -- window overview (hyprexpo replacement)
-hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("hyprctl dispatch hycov:toggleoverview"))
+hl.bind(mainMod .. " + TAB", function() pcall(function() hl.plugin.hycov.toggleoverview() end) end)
 hl.bind("ALT + TAB",         hl.dsp.exec_cmd("~/.config/hypr/scripts/window-switcher.sh"))
 
 -- Move focus with mainMod + hjkl

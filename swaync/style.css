@@ -18,6 +18,13 @@
   --accent: #89b4fa;
   --bg-selected: #89b4fa;
 
+  /* Hyprland's own error-overlay accent colors (Colors::WARNING/ERROR) */
+  --noti-accent-critical: #e05f65;
+  --noti-accent-normal: #ecb75c;
+  --noti-accent-low: #5a5a5a;
+  --noti-accent-bar-width: 4px;
+  --noti-border-radius: 3px;
+
   /* Sizing */
   --notification-icon-size: 48px;
   --notification-app-icon-size: calc(var(--notification-icon-size) / 3);
@@ -91,20 +98,24 @@ blankwindow {
   padding: 4px 10px;
 }
 
-/* Notification card */
+/* Notification card — flat, sharp-cornered, colored left accent bar,
+   matching Hyprland's own on-screen error-overlay notifications */
 .notification-row .notification-background .notification {
-  border-radius: var(--border-radius);
+  border-radius: var(--noti-border-radius);
   border: var(--border);
+  border-left: var(--noti-accent-bar-width) solid var(--noti-accent-normal);
   padding: 0;
   transition: var(--hover-transition);
   background: rgba(var(--noti-bg), var(--noti-bg-alpha));
   font-family: var(--font-family);
 }
 
-.notification-row .notification-background .notification.low,
-.notification-row .notification-background .notification.normal,
+.notification-row .notification-background .notification.low {
+  border-left-color: var(--noti-accent-low);
+}
+
 .notification-row .notification-background .notification.critical {
-  /* Priority variants — same style, accent can be added for critical */
+  border-left-color: var(--noti-accent-critical);
 }
 
 /* Default action (main clickable area with icon, title, body) */
@@ -116,7 +127,7 @@ blankwindow {
   border: none;
   color: var(--text-color);
   transition: var(--hover-transition);
-  border-radius: var(--border-radius);
+  border-radius: var(--noti-border-radius);
 }
 
 .notification-row .notification-background .notification .notification-default-action:hover {
@@ -131,7 +142,7 @@ blankwindow {
 
 .notification-row .notification-background .notification .notification-default-action .notification-content {
   background: transparent;
-  border-radius: var(--border-radius);
+  border-radius: var(--noti-border-radius);
   padding: 0;
 }
 

@@ -41,12 +41,11 @@ apply_static() {
     sleep 0.2
 
     if ! pgrep -x hyprpaper &>/dev/null; then
-        hyprctl dispatch exec hyprpaper
+        hyprpaper &
+        disown
         sleep 1
     fi
 
-    hyprctl hyprpaper unload all
-    hyprctl hyprpaper preload "$wallpaper"
     hyprctl hyprpaper wallpaper ",$wallpaper"
 
     rm -f "$PREVIOUS_WALLPAPER_LINK"

@@ -19,4 +19,4 @@ chosen="$(echo "$list" | wofi -i --dmenu -p "Switch to window")" || exit 0
 
 # Address is 0x + hex at end of line (avoids invisible chars / font issues)
 addr="$(echo "$chosen" | grep -oE '0x[0-9a-f]+$' || true)"
-[ -n "$addr" ] && hyprctl dispatch focuswindow "address:$addr"
+[ -n "$addr" ] && hyprctl dispatch "hl.dsp.focus({window=\"address:$addr\"})"
