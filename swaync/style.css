@@ -1,60 +1,61 @@
-/* SwayNC — Minimal black Hyprland-style theme */
+/* SwayNC — Material Ocean, glass cards over pure black.
+   Palette pulled straight from kitty.conf's Material Ocean (Nord-based) scheme;
+   shapes/blur language matched to swayosd + waybar (16px rounding, rgba(0,0,0,.8-.92) blacks). */
 
 :root {
-  /* Palette */
-  --cc-bg: rgba(0, 0, 0, 0.92);
-  --card-bg: #0a0a0a;
-  --noti-border-color: #1a1a1a;
-  --noti-bg: 10, 10, 10;
-  --noti-bg-alpha: 0.95;
-  --noti-bg-darker: #080808;
-  --noti-bg-hover: #141414;
-  --noti-bg-focus: rgba(26, 26, 26, 0.9);
-  --noti-close-bg: #1a1a1a;
-  --noti-close-bg-hover: #252525;
-  --text-color: #ffffff;
-  --text-color-secondary: #aaaaaa;
-  --text-color-disabled: #666666;
-  --accent: #89b4fa;
-  --bg-selected: #89b4fa;
+  /* Palette (kitty.conf: cyan/blue/red/slate) */
+  --cc-bg: rgba(0, 0, 0, 0.8);
+  --card-bg: #000000;
+  --noti-border-color: rgba(216, 222, 233, 0.08);
+  --noti-bg: 0, 0, 0;
+  --noti-bg-alpha: 0.8;
+  --noti-bg-darker: #000000;
+  --noti-bg-hover: rgba(136, 192, 208, 0.07);
+  --noti-bg-focus: rgba(136, 192, 208, 0.10);
+  --noti-close-bg: rgba(216, 222, 233, 0.06);
+  --noti-close-bg-hover: rgba(191, 97, 106, 0.28);
+  --text-color: #D8DEE9;
+  --text-color-secondary: #8792a6;
+  --text-color-disabled: #4C566A;
+  --accent: #88C0D0;
+  --accent-secondary: #81A1C1;
+  --bg-selected: #88C0D0;
 
-  /* Hyprland's own error-overlay accent colors (Colors::WARNING/ERROR) */
-  --noti-accent-critical: #e05f65;
-  --noti-accent-normal: #ecb75c;
-  --noti-accent-low: #5a5a5a;
-  --noti-accent-bar-width: 4px;
-  --noti-border-radius: 3px;
+  /* Urgency accents (Material Ocean: cyan = normal, slate = low, nord red = critical) */
+  --noti-accent-normal: #88C0D0;
+  --noti-accent-low: #4C566A;
+  --noti-accent-critical: #BF616A;
+  --noti-ring-width: 2px;
+  --noti-border-radius: 16px;
 
   /* Sizing */
-  --notification-icon-size: 48px;
+  --notification-icon-size: 46px;
   --notification-app-icon-size: calc(var(--notification-icon-size) / 3);
   --notification-group-icon-size: 28px;
   --border: 1px solid var(--noti-border-color);
-  --border-radius: 12px;
-  --notification-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --border-radius: 16px;
+  --notification-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.6);
 
   /* Typography */
   --font-size-body: 13px;
   --font-size-summary: 14px;
-  --font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  --font-family: "FiraCode Nerd Font", "JetBrainsMono Nerd Font", monospace;
 
-  /* Transitions */
-  --hover-transition: background 0.2s ease, transform 0.15s ease;
+  /* Motion */
+  --hover-transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --group-collapse-transition: opacity 300ms ease-in-out;
 }
 
-@define-color cc-bg rgba(0, 0, 0, 0.92);
-@define-color noti-border-color #1a1a1a;
-@define-color noti-bg rgba(10, 10, 10, 0.95);
-@define-color noti-bg-opaque #0a0a0a;
-@define-color noti-bg-darker #080808;
-@define-color noti-bg-hover #141414;
-@define-color noti-bg-focus rgba(26, 26, 26, 0.9);
-@define-color noti-close-bg #1a1a1a;
-@define-color noti-close-bg-hover #252525;
-@define-color text-color #ffffff;
-@define-color text-color-disabled #666666;
-@define-color bg-selected #89b4fa;
+@keyframes noti-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 /* Base windows */
 notificationwindow,
@@ -98,24 +99,34 @@ blankwindow {
   padding: 4px 10px;
 }
 
-/* Notification card — flat, sharp-cornered, colored left accent bar,
-   matching Hyprland's own on-screen error-overlay notifications */
+/* Notification card — glass card over pure black: soft gradient body, hairline
+   border, colored ambient glow by urgency, icon carries the accent (not a bar) */
 .notification-row .notification-background .notification {
   border-radius: var(--noti-border-radius);
   border: var(--border);
-  border-left: var(--noti-accent-bar-width) solid var(--noti-accent-normal);
   padding: 0;
   transition: var(--hover-transition);
-  background: rgba(var(--noti-bg), var(--noti-bg-alpha));
+  background-color: rgba(var(--noti-bg), var(--noti-bg-alpha));
+  box-shadow:
+    0 0 0 1px rgba(136, 192, 208, 0.10),
+    0 14px 34px -12px rgba(136, 192, 208, 0.28),
+    0 2px 10px rgba(0, 0, 0, 0.5);
   font-family: var(--font-family);
+  animation: noti-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .notification-row .notification-background .notification.low {
-  border-left-color: var(--noti-accent-low);
+  box-shadow:
+    0 0 0 1px rgba(76, 86, 106, 0.14),
+    0 10px 26px -12px rgba(76, 86, 106, 0.22),
+    0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .notification-row .notification-background .notification.critical {
-  border-left-color: var(--noti-accent-critical);
+  box-shadow:
+    0 0 0 1px rgba(191, 97, 106, 0.20),
+    0 14px 34px -10px rgba(191, 97, 106, 0.38),
+    0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Default action (main clickable area with icon, title, body) */
@@ -146,12 +157,29 @@ blankwindow {
   padding: 0;
 }
 
-/* Icon (left) */
+/* Icon (left) — rounded square carrying an urgency-tinted glow ring */
 .notification-row .notification-background .notification .notification-default-action .notification-content .image {
   -gtk-icon-filter: none;
   -gtk-icon-size: var(--notification-icon-size);
-  border-radius: 8px;
+  border-radius: 12px;
   margin: 4px 10px 4px 4px;
+  box-shadow:
+    0 0 0 var(--noti-ring-width) rgba(136, 192, 208, 0.75),
+    0 0 14px 1px rgba(136, 192, 208, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+.notification-row .notification-background .notification.low .notification-default-action .notification-content .image {
+  box-shadow:
+    0 0 0 var(--noti-ring-width) rgba(76, 86, 106, 0.65),
+    0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+.notification-row .notification-background .notification.critical .notification-default-action .notification-content .image {
+  box-shadow:
+    0 0 0 var(--noti-ring-width) rgba(191, 97, 106, 0.85),
+    0 0 14px 1px rgba(191, 97, 106, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.55);
 }
 
 .notification-row .notification-background .notification .notification-default-action .notification-content .app-icon {
@@ -208,7 +236,7 @@ blankwindow {
 }
 
 .notification-row .notification-background .notification .notification-default-action .notification-content progressbar progress {
-  background: var(--text-color);
+  background-image: linear-gradient(90deg, var(--accent-secondary), var(--accent));
   border-radius: 4px;
 }
 
@@ -216,7 +244,7 @@ blankwindow {
   margin-top: 6px;
   background-color: var(--card-bg);
   -gtk-icon-filter: none;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 /* Inline reply */
@@ -237,7 +265,7 @@ blankwindow {
   margin-left: 4px;
   background: rgba(var(--noti-bg), var(--noti-bg-alpha));
   border: var(--border);
-  border-radius: var(--border-radius);
+  border-radius: 999px;
   color: var(--text-color);
 }
 
@@ -255,8 +283,8 @@ blankwindow {
 /* Alt actions (buttons below main content) */
 .notification-row .notification-background .notification .notification-alt-actions {
   background: none;
-  border-bottom-left-radius: var(--border-radius);
-  border-bottom-right-radius: var(--border-radius);
+  border-bottom-left-radius: var(--noti-border-radius);
+  border-bottom-right-radius: var(--noti-border-radius);
   padding: 6px;
 }
 
@@ -266,7 +294,7 @@ blankwindow {
 }
 
 .notification-row .notification-background .notification .notification-action > button {
-  border-radius: var(--border-radius);
+  border-radius: 999px;
   color: var(--text-color);
   background: var(--noti-bg-darker);
   border: var(--border);
@@ -397,7 +425,7 @@ blankwindow {
 
 .widget-title > button {
   margin-left: 8px;
-  border-radius: var(--border-radius);
+  border-radius: 999px;
   background: var(--noti-bg-darker);
   border: var(--border);
   color: var(--text-color);
@@ -446,10 +474,10 @@ blankwindow {
 
 /* MPRIS (media) */
 :root {
-  --mpris-album-art-overlay: rgba(0, 0, 0, 0.6);
-  --mpris-button-hover: rgba(255, 255, 255, 0.08);
+  --mpris-album-art-overlay: rgba(0, 0, 0, 0.7);
+  --mpris-button-hover: rgba(136, 192, 208, 0.10);
   --mpris-album-art-icon-size: 56px;
-  --mpris-album-art-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --mpris-album-art-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
 }
 
 .widget-mpris {
@@ -474,7 +502,7 @@ blankwindow {
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: var(--mpris-album-art-shadow);
   -gtk-icon-size: var(--mpris-album-art-icon-size);
 }
@@ -655,7 +683,7 @@ blankwindow {
 
 .widget-inhibitors > button {
   margin-left: 8px;
-  border-radius: var(--border-radius);
+  border-radius: 999px;
   background: var(--noti-bg-darker);
   border: var(--border);
   color: var(--text-color);
@@ -668,7 +696,7 @@ blankwindow {
 
 /* Menubar */
 .widget-menubar > .menu-button-bar > .widget-menubar-container button {
-  border-radius: var(--border-radius);
+  border-radius: 999px;
   margin: 0 4px;
   background: var(--noti-bg-darker);
   border: var(--border);
