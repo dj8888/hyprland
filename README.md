@@ -86,6 +86,7 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **Cursor (IDE)** — color theme: **Black Italic** ([jaakko.black](https://github.com/Jaakkko/vscode-black-theme))
 - **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
 - **ttf-firacode-nerd** — patched Fira Code with icon glyphs. Required by `kitty.conf` (`font_family FiraCode Nerd Font`) for powerline separators and icons (nvim-web-devicons, tmux, waybar). Plain `ttf-fira-code` alone is *not* enough — kitty falls back silently to a glyphless font if only that's installed.
+  - **Troubleshooting missing/blank glyphs:** verify the font is actually installed with `fc-list | grep -i "nerd font"`. tmux itself does not render fonts (it only forwards bytes to the terminal), so it's rarely the cause — but if you do suspect it, confirm `tmux -V` is ≥3.2 and locale is UTF-8 (`locale | grep LC_CTYPE`); older tmux versions mis-measured Nerd Font (Private-Use-Area) glyph widths and corrupted layout.
 - **otf-font-awesome**
 - **lsd** (fancy `ls`)
 - **fastfetch** (system info at login / on demand; config in `fastfetch/`)
