@@ -85,7 +85,8 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **bibata-cursor-theme** — cursor theme in use: **Bibata-Original-Classic** (size 24; set in `hypr/hyprland.conf` via `HYPRCURSOR_THEME` / `XCURSOR_THEME`)
 - **Cursor (IDE)** — color theme: **Black Italic** ([jaakko.black](https://github.com/Jaakkko/vscode-black-theme))
 - **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
-- **ttf-fira-code**, **otf-font-awesome**
+- **ttf-firacode-nerd** — patched Fira Code with icon glyphs. Required by `kitty.conf` (`font_family FiraCode Nerd Font`) for powerline separators and icons (nvim-web-devicons, tmux, waybar). Plain `ttf-fira-code` alone is *not* enough — kitty falls back silently to a glyphless font if only that's installed.
+- **otf-font-awesome**
 - **lsd** (fancy `ls`)
 - **fastfetch** (system info at login / on demand; config in `fastfetch/`)
 
