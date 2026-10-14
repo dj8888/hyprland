@@ -32,9 +32,12 @@
         //"wlr/taskbar"
     ],
     "modules-center": [
+        "custom/media-prev",
+        "custom/media-playpause",
+        "custom/media",
+        "custom/media-next",
         "network",
-        "clock",
-        ""
+        "clock"
     ],
     "modules-right": [
         //"mpd",

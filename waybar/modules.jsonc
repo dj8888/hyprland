@@ -256,7 +256,50 @@
   // System tray
   "tray": {
     "icon-size": 21,
-    "spacing": 10
+    "spacing": 10,
+    "show-passive-items": false
+  },
+
+  // Media (shows the current track only while something is actually playing;
+  // uses a script because waybar's native mpris module's format-paused/
+  // format-stopped overrides don't take effect in this waybar build)
+  "custom/media": {
+    "exec": "~/.config/waybar/scripts/media.sh",
+    "restart-interval": 2,
+    "return-type": "json",
+    "format": "{text}",
+    "hide-empty-text": true,
+    "escape": true,
+    "on-click": "playerctl -p playerctld play-pause"
+  },
+
+  // Media transport buttons (shown whenever a player is loaded, playing or paused)
+  "custom/media-prev": {
+    "exec": "~/.config/waybar/scripts/media-ctl.sh prev",
+    "restart-interval": 2,
+    "return-type": "json",
+    "format": "{text}",
+    "hide-empty-text": true,
+    "on-click": "playerctl -p playerctld previous",
+    "tooltip-format": "Previous track"
+  },
+  "custom/media-playpause": {
+    "exec": "~/.config/waybar/scripts/media-ctl.sh playpause",
+    "restart-interval": 2,
+    "return-type": "json",
+    "format": "{text}",
+    "hide-empty-text": true,
+    "on-click": "playerctl -p playerctld play-pause",
+    "tooltip-format": "Play/Pause"
+  },
+  "custom/media-next": {
+    "exec": "~/.config/waybar/scripts/media-ctl.sh next",
+    "restart-interval": 2,
+    "return-type": "json",
+    "format": "{text}",
+    "hide-empty-text": true,
+    "on-click": "playerctl -p playerctld next",
+    "tooltip-format": "Next track"
   },
 
   // Clock

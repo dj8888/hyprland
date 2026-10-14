@@ -56,6 +56,27 @@ window#waybar.chromium {
 .modules-right > widget:last-child > #workspaces {
     margin-right: 0;
 }
+
+/* Center group: round whichever module ends up first/last, regardless of which are hidden */
+.modules-center > widget:first-child > #network,
+.modules-center > widget:first-child > #clock,
+.modules-center > widget:first-child > #custom-media-prev,
+.modules-center > widget:first-child > #custom-media-playpause,
+.modules-center > widget:first-child > #custom-media,
+.modules-center > widget:first-child > #custom-media-next {
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+}
+
+.modules-center > widget:last-child > #network,
+.modules-center > widget:last-child > #clock,
+.modules-center > widget:last-child > #custom-media-prev,
+.modules-center > widget:last-child > #custom-media-playpause,
+.modules-center > widget:last-child > #custom-media,
+.modules-center > widget:last-child > #custom-media-next {
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
 /* -----------------------------------------------------
  * Tooltips
  * ----------------------------------------------------- */
@@ -134,8 +155,6 @@ tooltip label {
     font-size: 15px;
     color: @textcolor;
     margin: 0px 0px 0px 0px;
-    border-top-right-radius: 16px;
-    border-bottom-right-radius: 16px;
 }
 
 /* -----------------------------------------------------
@@ -223,13 +242,39 @@ to {
 #network {
     color: @greensig;
     background-color: rgba(0, 0, 0, 0.8);
-    border-top-left-radius: 16px;
-    border-bottom-left-radius: 16px;
     padding: 0 0 0 12px;
 }
 
 #network.disconnected {
     color: @redsig;
+}
+
+#custom-media,
+#custom-media-prev,
+#custom-media-playpause,
+#custom-media-next {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+}
+
+#custom-media {
+    padding: 0 8px;
+}
+
+#custom-media-prev,
+#custom-media-playpause,
+#custom-media-next {
+    padding: 0 6px;
+}
+
+.modules-center > widget:first-child > #custom-media-prev {
+    padding-left: 14px;
+}
+
+#custom-media-prev:hover,
+#custom-media-playpause:hover,
+#custom-media-next:hover {
+    background-color: rgba(40, 40, 40, 0.8);
 }
 
 /* -----------------------------------------------------
@@ -320,21 +365,6 @@ to {
 label:focus {
     background-color: #000000;
 }
-
-#custom-media {
-    background-color: #66cc99;
-    color: #2a5c45;
-    min-width: 100px;
-}
-
-#custom-media.custom-spotify {
-    background-color: #66cc99;
-}
-
-#custom-media.custom-vlc {
-    background-color: #ffa000;
-}
-
 
 #mpd {
     background-color: #66cc99;

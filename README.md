@@ -51,6 +51,7 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **waybar** (bar)
 - **swaync** (notifications; gesture + `mainMod+M`)
 - **swayosd** (volume/brightness on-screen display)
+- **hyprmoncfg** (terminal monitor layout configurator + auto-switching daemon; AUR: `yay -S hyprmoncfg`). Run `hyprmoncfg` to arrange monitors, scale, and workspace assignment. It writes `hypr/hyprmoncfg-monitors.lua`, which `hypr/hyprland.lua` loads at the very end (so nothing earlier overrides the applied layout; skipped if the file is missing). Don't hand-edit that generated file.
 - **wofi** (app launcher, dmenu for cliphist/emoji)
 - **wlogout** (logout menu; `mainMod+Shift+L`)
 - **kitty** (terminal)
@@ -86,7 +87,7 @@ Install `archlinux-xdg-menu` if you use Dolphin. Optional: add the options in `p
 - **Cursor (IDE)** — color theme: **Black Italic** ([jaakko.black](https://github.com/Jaakkko/vscode-black-theme))
 - **noto-fonts**, **noto-fonts-cjk**, **noto-fonts-extra**
 - **ttf-firacode-nerd** — patched Fira Code with icon glyphs. Required by `kitty.conf` (`font_family FiraCode Nerd Font`) for powerline separators and icons (nvim-web-devicons, tmux, waybar). Plain `ttf-fira-code` alone is *not* enough — kitty falls back silently to a glyphless font if only that's installed.
-  - **Troubleshooting missing/blank glyphs:** verify the font is actually installed with `fc-list | grep -i "nerd font"`. tmux itself does not render fonts (it only forwards bytes to the terminal), so it's rarely the cause — but if you do suspect it, confirm `tmux -V` is ≥3.2 and locale is UTF-8 (`locale | grep LC_CTYPE`); older tmux versions mis-measured Nerd Font (Private-Use-Area) glyph widths and corrupted layout.
+  - **Known limitation — ligatures inside tmux:** FiraCode's ligatures (`->`, `-->`, `!=`, etc. rendered as single glyphs) don't shape inside tmux. tmux redraws the screen cell-by-cell, which breaks the contiguous character run kitty's shaper needs to substitute a ligature, so the raw ASCII is shown instead. This is not a missing-font or missing-glyph issue (icons and powerline separators still render fine in tmux) and there's no config fix — it's inherent to running a ligature-aware terminal through a multiplexer.
 - **otf-font-awesome**
 - **lsd** (fancy `ls`)
 - **fastfetch** (system info at login / on demand; config in `fastfetch/`)
