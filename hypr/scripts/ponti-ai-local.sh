@@ -38,7 +38,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-OLLAMA_MODEL="${OLLAMA_MODEL:-gemma3:4b}"
+# OLLAMA_MODEL="${OLLAMA_MODEL:-gemma3:4b}"
+# OLLAMA_MODEL="${OLLAMA_MODEL:-gemma3:270m}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2:1b}"
 PONTI_WAV="${TMPDIR:-/tmp}/ponti-${MODE}-rec.wav"
 PONTI_REC_PID="${TMPDIR:-/tmp}/ponti-${MODE}-rec.pid"
 STATE_DIR="${PONTI_STATE_DIR:-$HOME/.local/state/ponti}"

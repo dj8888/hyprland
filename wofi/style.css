@@ -2,7 +2,7 @@
 window {
   font-family: "FiraCode Nerd Font";
   margin: 0px;
-  background-color: rgba(0, 0, 0, 0.88);
+  background-color: rgba(0, 0, 0, 0.8);
   border-radius: 10px;
   border: none;
 }
@@ -11,7 +11,7 @@ window {
   margin: 10px;
   color: #D8DEE9;
   border: 2px solid #4C566A;
-  background-color: rgba(0, 0, 0, 0.88);
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 #inner-box {

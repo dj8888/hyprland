@@ -26,6 +26,7 @@
 
     // Choose the order of the modules
     "modules-left": [
+        "custom/launcher",
         "hyprland/workspaces",
         "hyprland/window"
         //"custom/media",
@@ -74,6 +75,7 @@
 
     // Choose the order of the modules
     "modules-left": [
+        "custom/launcher",
         "hyprland/workspaces",
         "hyprland/window"
         //"custom/media",

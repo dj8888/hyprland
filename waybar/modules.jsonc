@@ -90,6 +90,13 @@
       "format-icons": ["", "", ""]
   },
 
+  // App launcher (toggles wofi drun)
+  "custom/launcher": {
+    "format": "\udb80\udc3b",
+    "on-click": "~/.config/waybar/scripts/drun-toggle.sh",
+    "tooltip-format": "Toggle app launcher"
+  },
+
   // Power Menu
   "custom/exit": {
     "format": "",

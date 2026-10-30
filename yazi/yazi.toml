@@ -1,16 +1,16 @@
-# yazi.toml
-[manager]
+# yazi.toml — Yazi 26+ uses [mgr] and %s/%s1 opener placeholders (not "$@").
+[mgr]
 show_hidden = true
 
 [opener]
 play = [
-	{ run = 'vlc "$@"', orphan = true, for = "unix" },
+	{ run = "mpv %s", orphan = true, for = "linux" },
 ]
 edit = [
-	{ run = '"$EDITOR" "$@"', block = true, for = "unix" },
+	{ run = "${EDITOR:-nvim} %s", block = true, desc = "Edit", for = "unix" },
 ]
 open = [
-	{ run = 'xdg-open "$@"', desc = "Open" },
+	{ run = "xdg-open %s1", desc = "Open", for = "linux" },
 ]
 
 [open]
@@ -30,12 +30,11 @@ prepend_rules = [
 	{ url = "*.lua", use = "edit" },
 	{ url = "*.xml", use = "edit" },
 	{ url = "*.log", use = "edit" },
-# open with normal / gnome / kde
+	# open with normal / gnome / kde
 	{ url = "*.ods", use = "open" },
 	{ url = "*.pdf", use = "open" },
-# open with multimedia player
+	# open with multimedia player
 	{ url = "*.mp3", use = "play" },
-
 ]
 append_rules = [
 	{ url = "*", use = "edit" },

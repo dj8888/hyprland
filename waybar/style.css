@@ -48,7 +48,8 @@ window#waybar.chromium {
 * Modules
 ------------------------------------*/
 /* If workspaces is the leftmost module, omit left margin */
-.modules-left > widget:first-child > #workspaces {
+.modules-left > widget:first-child > #workspaces,
+.modules-left > widget:first-child > #custom-launcher {
     margin-left: 0;
 }
 
@@ -282,8 +283,11 @@ to {
  * ----------------------------------------------------- */
 #tray {
     background-color: rgba(0,0,0,0.8);
-    border-radius: 16px;
-    margin-right: 8px;
+    border-radius: 15px;
+    min-width: 30px;
+    padding: 0;
+    font-size: 16px;
+    margin-right: 6px;
 }
 
 #tray > .passive {
@@ -314,6 +318,19 @@ to {
     border-top-right-radius: 16px;
     border-bottom-right-radius: 16px;
 }
+#custom-launcher {
+    background-color: rgba(0,0,0,0.8);
+    color: #ffffff;
+    border-radius: 15px;
+    min-width: 30px;
+    padding: 0;
+    font-size: 15px;
+    margin-right: 6px;
+}
+#custom-launcher:hover {
+    background-color: rgba(40,40,40,0.8);
+}
+
 #custom-exit:hover {
     background-color: rgba(40,40,40,0.8);
 }
